@@ -2,7 +2,7 @@ import { h } from '../util/dom.js';
 
 export function siteFooter() {
   return h('footer', { class: 'site-footer' },
-    h('p', { class: 'mark' }, 'with love, N & S'),
+    h('p', { class: 'mark' }, 'with love, Sharon & Nadav'),
     h('p', { class: 'note' },
       'Faces were grouped automatically on a private computer. No face data is stored '
       + 'on this website. If you would like your photos removed, ',

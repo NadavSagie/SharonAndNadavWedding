@@ -1,0 +1,42 @@
+{
+  "_readme": [
+    "Hand-edited. The indexer NEVER writes this file.",
+    "After editing run: npm run index-faces:recluster  (seconds — detection is cached)",
+    "Applied in order: ignoreFaces/ignorePhotos -> split -> merge -> people attributes.",
+    "Person ids are stable across re-runs. See face-index/review.json for every",
+    "detected person, their photo count and the borderline pairs worth deciding on."
+  ],
+  "_schema": {
+    "people": "{ \"p-0001\": { name, featured, order, cover, hidden, note } }",
+    "merge": "[[\"p-0001\",\"p-0003\"]] — first id is canonical, the rest are absorbed",
+    "split": "{ \"p-0009\": { moveFaces: [\"t-3_1102x0455\"], to: \"p-0090\" } }",
+    "ignoreFaces": "[\"t-77_0201x0033\"] — drop a single bad detection",
+    "ignorePhotos": "[\"t-58-preview\"] — drop a whole photo"
+  },
+
+  "version": 1,
+
+  "people": {
+    "p-0001": { "name": "Nadav", "featured": true, "order": 1 },
+    "p-0002": { "name": "Sharon", "featured": true, "order": 2 }
+  },
+
+  "_mergeNotes": [
+    "p-0003 is Nadav wearing sunglasses. Sunglasses destroy the eye region the",
+    "descriptor relies on, so it clustered separately (d=0.478 to p-0001) even",
+    "though p-0001 already contains other sunglasses shots of him. Verified by eye.",
+    "",
+    "NOT merged, deliberately: p-0004, p-0005, p-0006, p-0012, p-0014, p-0017 and",
+    "p-0029 are all red-haired women who each sit 0.48-0.56 from Sharon (p-0002)",
+    "but 0.51-0.59 from EACH OTHER. That pattern means they are close to a large",
+    "cluster's broad centroid, not that they are one person. Check them in",
+    "face-index/review.json and merge only the ones you recognise."
+  ],
+  "merge": [
+    ["p-0001", "p-0003"]
+  ],
+
+  "split": {},
+  "ignoreFaces": [],
+  "ignorePhotos": []
+}

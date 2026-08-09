@@ -1,0 +1,58 @@
+/* Photo grid. Columns are built in JS (round-robin), so this only styles them. */
+
+.gallery {
+  display: grid;
+  gap: var(--sp-2);
+  padding: 0 var(--gutter);
+  align-items: start;
+  grid-template-columns: repeat(2, 1fr);
+}
+.gallery-col { display: grid; gap: var(--sp-2); align-content: start; }
+
+@media (min-width: 600px) {
+  .gallery { grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
+  .gallery-col { gap: var(--sp-3); }
+}
+@media (min-width: 1024px) {
+  .gallery { grid-template-columns: repeat(4, 1fr); gap: var(--sp-4); }
+  .gallery-col { gap: var(--sp-4); }
+}
+@media (min-width: 1440px) {
+  .gallery { grid-template-columns: repeat(5, 1fr); }
+}
+
+.tile {
+  display: block; width: 100%;
+  position: relative;
+  border-radius: var(--r-photo);
+  overflow: hidden;
+  /* No card frame, no border, no elevation — a chrome box around a photograph
+     is the single clearest "dashboard UI" tell. */
+  background: var(--c-paper-sunk);
+}
+.tile img {
+  width: 100%; height: auto; display: block;
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease-out);
+}
+.tile img.is-loaded { opacity: 1; }
+.tile::after {
+  content: ""; position: absolute; inset: 0;
+  background: rgba(20, 16, 14, 0);
+  transition: background var(--dur-2) var(--ease-out);
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .tile:hover::after { background: rgba(20, 16, 14, 0.10); }
+}
+.tile:active { transform: scale(0.99); }
+
+.gallery-sentinel { height: 1px; }
+
+.gallery-more {
+  text-align: center;
+  padding: var(--sp-6) var(--gutter) 0;
+  color: var(--c-muted);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}

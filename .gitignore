@@ -1,0 +1,15 @@
+node_modules/
+
+# Biometric working data — face descriptors and landmarks NEVER leave this machine.
+.face-cache/
+
+# Full-resolution originals (~446 MB). Only the web derivatives in
+# assets/gallery/ are committed and deployed. See README.md.
+assets/images/t-*.jpg
+!assets/images/t-58-preview.jpg
+
+# OS / editor noise
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/

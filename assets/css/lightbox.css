@@ -1,0 +1,160 @@
+/* Fullscreen photo viewer. */
+
+.lb {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--c-backdrop);
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease-out);
+  /* Own the gesture: no pull-to-refresh mid-swipe, no rubber-band scroll. */
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+.lb[data-open="1"] { opacity: 1; }
+
+.lb-stage {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.lb-img {
+  max-width: 100vw;
+  max-height: 100dvh;
+  object-fit: contain;
+  user-select: none; -webkit-user-drag: none;
+  will-change: transform;
+}
+.lb[data-open="1"] .lb-img { animation: lb-in var(--dur-2) var(--ease-out); }
+@keyframes lb-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.lb[data-dragging="1"] .lb-img { transition: none; }
+.lb-img.settling { transition: transform var(--dur-2) var(--ease-spring); }
+
+/* Chrome ------------------------------------------------------------------- */
+
+.lb-chrome {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity var(--dur-2) var(--ease-out);
+}
+.lb-chrome > * { pointer-events: auto; }
+.lb[data-chrome="0"] .lb-chrome { opacity: 0; pointer-events: none; }
+
+.lb-btn {
+  position: absolute;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px;
+  border-radius: var(--r-pill);
+  /* Dark scrim, not a light one: chrome has to stay legible over a bright
+     sky and a dark dance floor alike, and a white photo swallows a light pill. */
+  background: rgba(20, 16, 14, 0.46);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.lb-btn svg {
+  width: 20px; height: 20px;
+  fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+@media (hover: hover) and (pointer: fine) {
+  .lb-btn:hover { background: rgba(20, 16, 14, 0.68); }
+}
+
+/* Top scrim so the counter and close button never sit on bare highlights. */
+.lb-chrome::before {
+  content: ""; position: absolute; inset: 0 0 auto 0;
+  height: calc(env(safe-area-inset-top) + 96px);
+  background: linear-gradient(180deg, rgba(20, 16, 14, 0.45) 0%, rgba(20, 16, 14, 0) 100%);
+  pointer-events: none;
+}
+
+.lb-close { top: calc(env(safe-area-inset-top) + var(--sp-3)); right: var(--sp-3); }
+
+.lb-counter {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + var(--sp-3)); left: var(--sp-5);
+  height: 48px; display: flex; align-items: center;
+  font-size: var(--fs-sm); font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* Arrows are pointless on touch — they compete with the swipe. */
+.lb-prev, .lb-next { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .lb-prev, .lb-next {
+    display: inline-flex;
+    top: 50%; transform: translateY(-50%);
+    width: 56px; height: 56px;
+  }
+  .lb-prev { left: var(--sp-4); }
+  .lb-next { right: var(--sp-4); }
+}
+.lb-btn[disabled] { opacity: 0.25; pointer-events: none; }
+
+/* Bottom bar --------------------------------------------------------------- */
+
+.lb-bar {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: var(--sp-5) var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom));
+  display: flex; align-items: center; gap: var(--sp-3);
+  background: linear-gradient(180deg, rgba(20,16,14,0) 0%, rgba(20,16,14,0.62) 60%);
+}
+
+.lb-chips {
+  flex: 1; min-width: 0;
+  display: flex; gap: var(--sp-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.lb-chips::-webkit-scrollbar { display: none; }
+
+.lb-chip {
+  flex: none;
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  height: 40px; padding: 0 var(--sp-4) 0 4px;
+  border-radius: var(--r-pill);
+  background: rgba(20, 16, 14, 0.52);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: var(--fs-xs); font-weight: 600; white-space: nowrap;
+}
+.lb-chip img {
+  width: 32px; height: 32px; border-radius: 50%;
+  object-fit: cover; background: var(--c-chrome-dark);
+}
+@media (hover: hover) and (pointer: fine) {
+  .lb-chip:hover { background: rgba(247, 243, 238, 0.24); }
+}
+
+.lb-actions { display: flex; gap: var(--sp-2); flex: none; }
+.lb-actions .lb-btn { position: static; width: 44px; height: 44px; }
+
+.lb-hint {
+  position: absolute; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-pill);
+  background: rgba(20, 16, 14, 0.8);
+  color: var(--c-on-dark); font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+/* Face box overlay --------------------------------------------------------- */
+
+.lb-boxes { position: absolute; pointer-events: none; }
+.lb-box {
+  position: absolute;
+  border: 2px solid var(--c-gold);
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px rgba(20, 16, 14, 0.35);
+}
+
+body.lb-open { overflow: hidden; }

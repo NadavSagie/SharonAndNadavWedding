@@ -1,0 +1,174 @@
+/* Header and the home hero. */
+
+.app-header {
+  position: sticky; top: 0; z-index: 40;
+  display: grid; grid-template-columns: var(--tap-min) 1fr var(--tap-min);
+  align-items: center;
+  height: calc(var(--header-h) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) var(--sp-2) 0;
+  background: rgba(251, 248, 244, 0.82);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-2) var(--ease-out);
+}
+.app-header[data-scrolled="1"] { border-bottom-color: var(--c-line); }
+.app-header[hidden] { display: none; }
+
+.hdr-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--tap-min); height: var(--tap-min);
+  border-radius: var(--r-pill); color: var(--c-ink);
+}
+.hdr-btn svg {
+  width: 20px; height: 20px;
+  fill: none; stroke: currentColor; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.hdr-btn#hdr-photos svg { fill: currentColor; stroke: none; }
+@media (hover: hover) and (pointer: fine) {
+  .hdr-btn:hover { background: var(--c-paper-raised); }
+}
+
+.hdr-title {
+  text-align: center; font-size: var(--fs-base); font-weight: 600;
+  color: var(--c-ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Hero --------------------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  /* svh, never vh: on iOS Safari 100vh exceeds the visible viewport and pushes
+     the CTA under the URL bar — hiding the single most important control. */
+  height: 100svh;
+  min-height: 560px;
+  display: flex; align-items: flex-end; justify-content: center;
+  overflow: hidden;
+  background: var(--c-paper-sunk);
+}
+
+.hero-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center 42%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-img { animation: kenburns 24s var(--ease-io) forwards; }
+}
+@keyframes kenburns {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); }
+}
+
+.hero-scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 16, 14, 0.30) 0%,
+    rgba(20, 16, 14, 0.04) 32%,
+    rgba(20, 16, 14, 0.12) 55%,
+    rgba(20, 16, 14, 0.70) 100%
+  );
+}
+
+.hero-content {
+  position: relative;
+  width: 100%; max-width: 640px;
+  padding: 0 var(--gutter) max(var(--sp-8), calc(env(safe-area-inset-bottom) + 52px));
+  text-align: center;
+  color: var(--c-on-dark);
+}
+
+.hero-eyebrow {
+  font-size: var(--fs-micro); font-weight: 600;
+  letter-spacing: var(--ls-eyebrow); text-transform: uppercase;
+  color: var(--c-on-dark-mute);
+}
+
+.hero-names {
+  margin-top: var(--sp-4);
+  font-family: var(--font-display); font-weight: 300;
+  font-size: var(--fs-hero); line-height: var(--lh-tight);
+  color: var(--c-on-dark);
+  text-shadow: 0 2px 30px rgba(20, 16, 14, 0.35);
+}
+/* The italic gold ampersand carries most of the "wedding" signal. */
+.hero-names em {
+  font-style: italic; font-weight: 400;
+  font-size: 0.72em; color: var(--c-gold);
+  padding: 0 0.06em;
+}
+
+.hero-rule {
+  width: 56px; height: 1px;
+  background: rgba(247, 243, 238, 0.45);
+  margin: var(--sp-5) auto;
+}
+
+.hero-alt {
+  display: inline-block; margin-top: var(--sp-5);
+  min-height: var(--tap-min); line-height: var(--tap-min);
+  font-size: var(--fs-base); color: var(--c-on-dark-mute);
+  text-decoration: underline; text-underline-offset: 4px;
+  text-decoration-color: rgba(247, 243, 238, 0.3);
+}
+@media (hover: hover) and (pointer: fine) {
+  .hero-alt:hover { color: var(--c-on-dark); }
+}
+
+.hero-cue {
+  position: absolute; left: 50%; bottom: max(var(--sp-3), env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  opacity: 0.5; transition: opacity var(--dur-2);
+}
+.hero-cue svg {
+  width: 18px; height: 18px;
+  fill: none; stroke: var(--c-on-dark); stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.hero-cue[data-hidden="1"] { opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-cue { animation: bob 2.2s ease-in-out infinite; }
+}
+@keyframes bob {
+  0%, 100% { transform: translate(-50%, 0); }
+  50%      { transform: translate(-50%, 6px); }
+}
+
+/* Home below-the-fold ------------------------------------------------------ */
+
+.home-strip {
+  display: grid; gap: var(--sp-3);
+  grid-template-columns: repeat(3, 1fr);
+  max-width: var(--content-max);
+  margin: var(--sp-9) auto 0;
+  padding: 0 var(--gutter);
+}
+.home-strip img {
+  width: 100%; aspect-ratio: 3 / 4; object-fit: cover;
+  border-radius: var(--r-photo);
+  background: var(--c-paper-sunk);
+}
+.home-strip a:nth-child(2) { grid-row: span 1; }
+@media (min-width: 768px) {
+  .home-strip { grid-template-columns: 1fr 1.35fr 1fr; align-items: center; }
+  .home-strip a:nth-child(2) img { aspect-ratio: 3 / 4.4; }
+}
+
+.home-say {
+  max-width: var(--text-max);
+  margin: var(--sp-8) auto 0;
+  padding: 0 var(--gutter);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  line-height: 1.5;
+  color: var(--c-ink-soft);
+}
+
+.home-cta-row {
+  margin-top: var(--sp-7);
+  text-align: center;
+}

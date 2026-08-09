@@ -1,0 +1,26 @@
+{
+  "name": "sharon-and-nadav-wedding",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Face-based wedding photo gallery for Nadav & Sharon. The site itself is static (no build step); Node is used only for offline face indexing.",
+  "scripts": {
+    "index-faces": "node tools/face-index/cli.mjs",
+    "index-faces:doctor": "node tools/face-index/cli.mjs --doctor",
+    "index-faces:force": "node tools/face-index/cli.mjs --force",
+    "index-faces:recluster": "node tools/face-index/cli.mjs --from=cluster",
+    "index-faces:derivatives": "node tools/face-index/cli.mjs --only=derivatives",
+    "serve": "npx --yes serve . -l 3000",
+    "verify": "node tools/verify.mjs"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs": "4.22.0",
+    "@tensorflow/tfjs-backend-wasm": "4.22.0",
+    "@vladmandic/face-api": "1.7.15",
+    "sharp": "^0.35.3"
+  },
+  "//deps": "tfjs-node (native, ~3x faster per-thread) is intentionally NOT a dependency: it publishes no NAPI-v10 prebuilt binding, so it cannot load on Node >=22 (see README). The indexer still probes for it at runtime and will use it automatically if you install it on an older Node. Parallelism comes from a worker_threads pool instead.",
+  "engines": {
+    "node": ">=20"
+  }
+}

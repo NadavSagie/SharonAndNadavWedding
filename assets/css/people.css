@@ -1,0 +1,154 @@
+/* People grid and the person header. */
+
+.couple-row {
+  display: flex; justify-content: center; gap: var(--sp-7);
+  padding: var(--sp-2) var(--gutter) var(--sp-6);
+}
+.couple-row .person-tile { width: 132px; }
+.couple-row .person-face { width: 132px; height: 132px; }
+.couple-row .person-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 400;
+}
+
+.couple-label {
+  text-align: center;
+  font-size: var(--fs-micro); font-weight: 600;
+  letter-spacing: var(--ls-eyebrow); text-transform: uppercase;
+  color: var(--c-muted);
+  padding-top: var(--sp-5);
+}
+
+.people-grid {
+  display: grid;
+  /* 3 columns / ~111px circles on a 390px phone; up to 9 at 1440px. */
+  grid-template-columns: repeat(auto-fill, minmax(clamp(88px, 22vw, 132px), 1fr));
+  gap: var(--sp-5) var(--sp-3);
+  padding: var(--sp-2) var(--gutter) 0;
+  justify-items: center;
+}
+
+.person-tile {
+  display: block; width: 100%; max-width: 132px;
+  text-align: center;
+}
+
+.person-face {
+  /* height:auto is load-bearing — the <img height> attribute is a presentational
+     hint, so without it the box stays 320px tall and border-radius:50% renders
+     an ellipse instead of a circle. */
+  width: 100%; height: auto; aspect-ratio: 1;
+  /* Circles, not rounded squares: they read unmistakably as "a person",
+     separate this grid from the rectangular photo grids, and forgive the
+     imperfect framing of an automatically-chosen crop. */
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--c-paper-sunk);
+  box-shadow: 0 0 0 1px var(--c-line), var(--sh-1);
+  transition: box-shadow var(--dur-2) var(--ease-out), transform var(--dur-1) var(--ease-out);
+}
+.person-tile:active .person-face { transform: scale(0.955); }
+@media (hover: hover) and (pointer: fine) {
+  .person-tile:hover .person-face { box-shadow: 0 0 0 2px var(--c-accent), var(--sh-2); }
+}
+
+.person-name {
+  display: block; margin-top: var(--sp-3);
+  font-size: var(--fs-sm); font-weight: 600; color: var(--c-ink);
+  line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.person-name .n { color: var(--c-muted); }
+
+.person-count {
+  display: block; margin-top: 2px;
+  font-size: var(--fs-xs); color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Search ------------------------------------------------------------------- */
+
+.people-search {
+  display: flex; align-items: center; gap: var(--sp-3);
+  max-width: 420px; margin: 0 auto var(--sp-6);
+  padding: 0 var(--sp-4);
+  height: var(--tap-min);
+  background: var(--c-paper-raised);
+  border-radius: var(--r-pill);
+}
+.people-search svg {
+  width: 17px; height: 17px; flex: none;
+  fill: none; stroke: var(--c-muted); stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.people-search input {
+  flex: 1; min-width: 0; height: 100%;
+  border: 0; background: none; outline: none;
+  font: inherit; font-size: var(--fs-base); color: var(--c-ink);
+}
+.people-search input::placeholder { color: var(--c-muted); }
+
+/* Long tail ---------------------------------------------------------------- */
+
+.people-tail {
+  margin: var(--sp-8) auto 0;
+  padding: 0 var(--gutter);
+  max-width: var(--content-max);
+}
+.people-tail > summary {
+  cursor: pointer; list-style: none;
+  display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  min-height: var(--tap-min);
+  font-size: var(--fs-sm); font-weight: 600; color: var(--c-ink-soft);
+}
+.people-tail > summary::-webkit-details-marker { display: none; }
+.people-tail > summary::after {
+  content: ""; width: 7px; height: 7px;
+  border-right: 1.6px solid var(--c-muted); border-bottom: 1.6px solid var(--c-muted);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform var(--dur-2) var(--ease-out);
+}
+.people-tail[open] > summary::after { transform: rotate(-135deg) translateY(-2px); }
+.people-tail .people-grid { padding-top: var(--sp-5); }
+
+.people-foot {
+  text-align: center;
+  margin-top: var(--sp-8);
+  padding: 0 var(--gutter);
+}
+.people-foot a { color: var(--c-accent); text-decoration: underline; text-underline-offset: 3px; }
+.people-foot .privacy {
+  max-width: 52ch; margin: var(--sp-5) auto 0;
+  font-size: var(--fs-xs); color: var(--c-muted); line-height: 1.7;
+}
+
+/* Person page header ------------------------------------------------------- */
+
+.person-head {
+  text-align: center;
+  padding: var(--sp-7) var(--gutter) var(--sp-6);
+}
+.person-head img {
+  width: 96px; height: 96px; margin: 0 auto;
+  border-radius: 50%; object-fit: cover;
+  background: var(--c-paper-sunk);
+  box-shadow: 0 0 0 1px var(--c-line), var(--sh-1);
+}
+.person-head h1 {
+  margin-top: var(--sp-4);
+  font-size: var(--fs-title);
+  outline: none;
+}
+.person-head .count {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm); color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
+.person-head .claim {
+  display: inline-block; margin-top: var(--sp-4);
+  font-size: var(--fs-sm); color: var(--c-accent);
+  text-decoration: underline; text-underline-offset: 3px;
+  min-height: var(--tap-min); line-height: var(--tap-min);
+}

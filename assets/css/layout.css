@@ -147,7 +147,7 @@
   padding: 0 var(--gutter);
 }
 .home-strip img {
-  width: 100%; aspect-ratio: 3 / 4; object-fit: cover;
+  width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover;
   border-radius: var(--r-photo);
   background: var(--c-paper-sunk);
 }

@@ -47,9 +47,16 @@ export async function homeView() {
 
   const strip = h('div', { class: 'home-strip' },
     picks.map((p) => {
+      // No width/height attributes here on purpose: this tile is cropped to a
+      // fixed aspect-ratio in CSS (3/4, or 3/4.4 for the centre tile) that does
+      // not match the photo's native ratio. Chrome resolves the grid row's
+      // height from width/height attributes rather than the CSS aspect-ratio
+      // when both are present, which blew these tiles up to full-photo height
+      // (thousands of px tall). aspect-ratio in CSS already prevents layout
+      // shift on its own, so no intrinsic-size hint is needed.
       const img = h('img', {
         src: thumbSrc(p.id), alt: '', loading: 'lazy', decoding: 'async',
-        width: p.w, height: p.h, style: { background: p.c || '' },
+        style: { background: p.c || '' },
       });
       withFallback(img, p.id);
       return h('a', {

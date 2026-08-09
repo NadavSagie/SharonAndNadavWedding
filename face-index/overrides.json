@@ -18,7 +18,11 @@
 
   "people": {
     "p-0001": { "name": "Nadav", "featured": true, "order": 1 },
-    "p-0002": { "name": "Sharon", "featured": true, "order": 2 }
+    "p-0002": { "name": "Sharon", "featured": true, "order": 2 },
+    "p-0025": { "hidden": true, "note": "confirmed not a distinguishable guest — removed by request" },
+    "p-0026": { "hidden": true, "note": "confirmed not a distinguishable guest — removed by request" },
+    "p-0027": { "hidden": true, "note": "confirmed not a distinguishable guest — removed by request" },
+    "p-0028": { "hidden": true, "note": "confirmed not a distinguishable guest — removed by request" }
   },
 
   "_mergeNotes": [
@@ -26,14 +30,17 @@
     "descriptor relies on, so it clustered separately (d=0.478 to p-0001) even",
     "though p-0001 already contains other sunglasses shots of him. Verified by eye.",
     "",
-    "NOT merged, deliberately: p-0004, p-0005, p-0006, p-0012, p-0014, p-0017 and",
-    "p-0029 are all red-haired women who each sit 0.48-0.56 from Sharon (p-0002)",
-    "but 0.51-0.59 from EACH OTHER. That pattern means they are close to a large",
-    "cluster's broad centroid, not that they are one person. Check them in",
-    "face-index/review.json and merge only the ones you recognise."
+    "p-0004, p-0005, p-0006, p-0012, p-0014, p-0017, p-0029 were flagged in the",
+    "original review as red-haired women each ~0.48-0.56 from Sharon (p-0002) but",
+    "0.51-0.59 from EACH OTHER — a hub pattern that usually means 'near a big",
+    "cluster's centroid, not each other'. Confirmed by Nadav & Sharon these are",
+    "all Sharon anyway, so merged.",
+    "",
+    "p-0011, p-0013 confirmed by Nadav & Sharon to be Nadav; merged."
   ],
   "merge": [
-    ["p-0001", "p-0003"]
+    ["p-0001", "p-0003", "p-0011", "p-0013"],
+    ["p-0002", "p-0004", "p-0005", "p-0006", "p-0012", "p-0014", "p-0017", "p-0029"]
   ],
 
   "split": {},

@@ -8,8 +8,6 @@ import { h } from '../util/dom.js';
 import { getPhotos, getPeople } from '../data.js';
 import { setHeader } from '../components/appHeader.js';
 import { siteFooter } from '../components/footer.js';
-import { thumbSrc, withFallback } from '../util/img.js';
-import { openLightbox } from '../components/lightbox.js';
 
 let heroNode = null;
 export function adoptHero(node) { heroNode = node; }
@@ -40,36 +38,7 @@ export async function homeView() {
   const onScroll = () => { if (cue) cue.dataset.hidden = window.scrollY > 40 ? '1' : '0'; };
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  // Three-photo teaser: spread across the set rather than the first three.
-  const picks = [0.18, 0.5, 0.78]
-    .map((f) => photos[Math.floor(photos.length * f)])
-    .filter(Boolean);
-
-  const strip = h('div', { class: 'home-strip' },
-    picks.map((p) => {
-      // No width/height attributes here on purpose: this tile is cropped to a
-      // fixed aspect-ratio in CSS (3/4, or 3/4.4 for the centre tile) that does
-      // not match the photo's native ratio. Chrome resolves the grid row's
-      // height from width/height attributes rather than the CSS aspect-ratio
-      // when both are present, which blew these tiles up to full-photo height
-      // (thousands of px tall). aspect-ratio in CSS already prevents layout
-      // shift on its own, so no intrinsic-size hint is needed.
-      const img = h('img', {
-        src: thumbSrc(p.id), alt: '', loading: 'lazy', decoding: 'async',
-        style: { background: p.c || '' },
-      });
-      withFallback(img, p.id);
-      return h('a', {
-        href: '#/photos',
-        onClick: (e) => {
-          e.preventDefault();
-          openLightbox(photos, photos.findIndex((x) => x.id === p.id), { context: 'photos' });
-        },
-      }, img);
-    }));
-
   const body = h('div', null,
-    strip,
     h('p', { class: 'home-say' },
       'Every photo from our wedding day, and a quick way to find the ones you are in.'),
     h('div', { class: 'home-cta-row' },

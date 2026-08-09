@@ -139,27 +139,9 @@
 
 /* Home below-the-fold ------------------------------------------------------ */
 
-.home-strip {
-  display: grid; gap: var(--sp-3);
-  grid-template-columns: repeat(3, 1fr);
-  max-width: var(--content-max);
-  margin: var(--sp-9) auto 0;
-  padding: 0 var(--gutter);
-}
-.home-strip img {
-  width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover;
-  border-radius: var(--r-photo);
-  background: var(--c-paper-sunk);
-}
-.home-strip a:nth-child(2) { grid-row: span 1; }
-@media (min-width: 768px) {
-  .home-strip { grid-template-columns: 1fr 1.35fr 1fr; align-items: center; }
-  .home-strip a:nth-child(2) img { aspect-ratio: 3 / 4.4; }
-}
-
 .home-say {
   max-width: var(--text-max);
-  margin: var(--sp-8) auto 0;
+  margin: var(--sp-9) auto 0;
   padding: 0 var(--gutter);
   text-align: center;
   font-family: var(--font-display);

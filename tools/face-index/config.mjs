@@ -95,8 +95,12 @@ export const CONFIG = {
    *  descriptors are noise, so they land near each other. Gating on the mean
    *  removes them as a class instead of blacklisting ids per dataset. */
   MIN_CLUSTER_QUALITY: 0.72,
-  /** Jaccard overlap of face-ID sets required to reuse a person ID from the ledger. */
-  LEDGER_MATCH_MIN_JACCARD: 0.25,
+  /** Overlap coefficient (|A∩B| / min(|A|,|B|)) of face-ID sets required to reuse
+   *  a person ID from the ledger. Deliberately not Jaccard: a person's cluster
+   *  can grow 5-10x when hundreds of new photos are added while still fully
+   *  containing their old faces, and Jaccard's union-based denominator would
+   *  crater the score for that growth and silently orphan the id. */
+  LEDGER_MATCH_MIN_OVERLAP: 0.25,
 
   // ------------------------------------------------- quality / representative
   QUALITY_WEIGHTS: { size: 0.3, detection: 0.25, frontality: 0.2, sharpness: 0.15, centrality: 0.1 },

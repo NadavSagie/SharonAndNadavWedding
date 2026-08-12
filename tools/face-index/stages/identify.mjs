@@ -97,7 +97,7 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
 
   // ---- stable IDs ---------------------------------------------------------
   const forLedger = keep.map((c) => ({ faceIds: c.scored.map((s) => s.faceId) }));
-  const { ids, reused, allocated } = ledger.assign(forLedger, cfg.LEDGER_MATCH_MIN_JACCARD);
+  const { ids, reused, allocated } = ledger.assign(forLedger, cfg.LEDGER_MATCH_MIN_OVERLAP);
 
   let people = keep.map((c, i) => ({
     id: ids[i],

@@ -68,8 +68,16 @@ export class Ledger {
    * Assign a stable person ID to each cluster.
    * Clusters are matched largest-first so the biggest, most stable groups get
    * first claim on their historical IDs.
+   *
+   * Uses the overlap coefficient (|A∩B| / min(|A|,|B|)), NOT Jaccard
+   * (|A∩B| / |A∪B|). Adding hundreds of new photos can grow a person's cluster
+   * by 5-10x while still containing every one of their old anchor faces as a
+   * subset; Jaccard punishes that growth (union balloons, score craters) and
+   * silently orphans the old id, allocating a duplicate and losing whatever
+   * name/overrides were attached to it. Overlap coefficient scores a clean
+   * subset relationship at ~1.0 regardless of how much the superset grew.
    */
-  assign(clusters, minJaccard) {
+  assign(clusters, minOverlap) {
     const order = clusters
       .map((c, i) => ({ i, size: c.faceIds.length }))
       .sort((a, b) => b.size - a.size);
@@ -86,17 +94,22 @@ export class Ledger {
 
       for (const [pid, entry] of Object.entries(this.data.people)) {
         if (taken.has(pid)) continue;
+        // An id that a previous `merge` absorbed into another id must not be a
+        // candidate again — otherwise the absorbed fragment (which still holds
+        // its old, small, high-overlap anchor set) can win the match ahead of
+        // the canonical id it was merged into, resurrecting a name that was
+        // explicitly folded away.
+        if (this.data.aliases[pid]) continue;
         const anchors = entry.anchors ?? [];
         if (!anchors.length) continue;
         let inter = 0;
         for (const a of anchors) if (ids.has(a)) inter++;
-        const union = ids.size + anchors.length - inter;
-        const jaccard = union ? inter / union : 0;
-        if (jaccard > bestScore) { bestScore = jaccard; bestId = pid; }
+        const overlap = inter / Math.min(ids.size, anchors.length);
+        if (overlap > bestScore) { bestScore = overlap; bestId = pid; }
       }
 
       let id;
-      if (bestId && bestScore >= minJaccard) {
+      if (bestId && bestScore >= minOverlap) {
         id = bestId;
         this.refresh(id, clusters[i].faceIds);
         reused++;

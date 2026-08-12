@@ -84,17 +84,16 @@
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
 }
 
-/* Arrows are pointless on touch — they compete with the swipe. */
-.lb-prev, .lb-next { display: none; }
-@media (hover: hover) and (pointer: fine) {
-  .lb-prev, .lb-next {
-    display: inline-flex;
-    top: 50%; transform: translateY(-50%);
-    width: 56px; height: 56px;
-  }
-  .lb-prev { left: var(--sp-4); }
-  .lb-next { right: var(--sp-4); }
+/* Shown on every input type: touch taps hit these same buttons fine because
+   gestures.js skips starting a swipe/pan/pinch on any interactive element
+   (see INTERACTIVE_SELECTOR), so the arrows and the swipe never compete. */
+.lb-prev, .lb-next {
+  display: inline-flex;
+  top: 50%; transform: translateY(-50%);
+  width: 56px; height: 56px;
 }
+.lb-prev { left: var(--sp-4); }
+.lb-next { right: var(--sp-4); }
 .lb-btn[disabled] { opacity: 0.25; pointer-events: none; }
 
 /* Bottom bar --------------------------------------------------------------- */

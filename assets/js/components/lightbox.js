@@ -3,17 +3,24 @@
  *
  * Gesture model deliberately mirrors Google Photos / Instagram, because that is
  * what guests already have in their fingers:
- *   - horizontal swipe: prev/next, image tracking the finger 1:1
- *   - vertical drag down: dismiss, image scaling and backdrop fading with distance
- *   - double-tap: 1x <-> 2.5x about the tap point
+ *   - horizontal swipe: prev/next, image tracking the finger 1:1 (only at 1x)
+ *   - vertical drag down: dismiss, image scaling and backdrop fading (only at 1x)
+ *   - double-tap: 1x <-> 2.5x about the tap point, either direction
+ *   - two-finger pinch: continuous zoom (1x-4x) about the pinch midpoint
+ *   - single-finger drag while zoomed: pans instead of swiping/dismissing
+ * attachGestures() (util/gestures.js) owns which of these is active at any
+ * moment; this module only reacts to its callbacks.
  *
  * History: opening pushes one entry, next/prev REPLACE it. So Android back
  * closes the viewer instead of unwinding thirty swipes, and any open photo is
- * a shareable link.
+ * a shareable link. Closing after swiping calls history.back() to unwind that
+ * one entry — see util/navGuard.js for why that needs a suppression flag, not
+ * just a bare history.back().
  */
 
 import { h, icon, announce } from '../util/dom.js';
 import { photoSrc, thumbSrc, coverSrc, preload, withFallback } from '../util/img.js';
+import { suppressNextDeepLink } from '../util/navGuard.js';
 import { attachGestures } from '../util/gestures.js';
 import { trapFocus, lockScroll } from '../util/focusTrap.js';
 import { getPhotoFaces, getPeople, displayName } from '../data.js';
@@ -28,8 +35,12 @@ const ICONS = {
   faces: ['M4 4h4M4 4v4M20 4h-4M20 4v4M4 20h4M4 20v-4M20 20h-4M20 20v-4'],
 };
 
-const ZOOM = 2.5;
+const DOUBLE_TAP_ZOOM = 2.5;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 4;
 const CHROME_IDLE_MS = 3000;
+
+const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 
 let state = null;
 
@@ -90,6 +101,22 @@ export function openLightbox(photos, index, { context = 'photos', personId = nul
   function applyTransform(extraX = 0, extraY = 0, scale = zoom, opacity = 1) {
     img.style.transform = `translate(${panX + extraX}px, ${panY + extraY}px) scale(${scale})`;
     root.style.opacity = String(opacity);
+  }
+
+  /** Keep a zoomed image from drifting fully off-screen. Computed from the
+   *  image's natural aspect ratio against the viewport rather than measuring
+   *  the live (already-transformed) box, so it's correct mid-gesture. */
+  function clampPan() {
+    if (!img.naturalWidth) return;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const fit = Math.min(vw / img.naturalWidth, vh / img.naturalHeight);
+    const halfW = (img.naturalWidth * fit * zoom) / 2;
+    const halfH = (img.naturalHeight * fit * zoom) / 2;
+    const maxX = Math.max(0, halfW - vw / 2);
+    const maxY = Math.max(0, halfH - vh / 2);
+    panX = clamp(panX, -maxX, maxX);
+    panY = clamp(panY, -maxY, maxY);
   }
 
   function show(idx, { announceIt = true } = {}) {
@@ -266,6 +293,14 @@ export function openLightbox(photos, index, { context = 'photos', personId = nul
 
   // ---- gestures -----------------------------------------------------------
 
+  // Static (zoom=1, pan=0) on-screen centre of the image, cached for the
+  // duration of a pinch. The centre point is invariant under scale (default
+  // transform-origin is the element's own centre), so it can be recovered
+  // from the CURRENT rect by subtracting the CURRENT pan, and then reused for
+  // every subsequent pinch-move frame without re-reading layout each time.
+  let pinchCenterX = 0;
+  let pinchCenterY = 0;
+
   const detach = attachGestures(root, {
     isZoomed: () => zoom > 1,
     onTap: () => {
@@ -275,16 +310,51 @@ export function openLightbox(photos, index, { context = 'photos', personId = nul
     onDoubleTap: (e) => {
       if (zoom > 1) { zoom = 1; panX = 0; panY = 0; }
       else {
-        zoom = ZOOM;
+        zoom = DOUBLE_TAP_ZOOM;
         const r = img.getBoundingClientRect();
-        panX = (r.left + r.width / 2 - e.clientX) * (ZOOM - 1);
-        panY = (r.top + r.height / 2 - e.clientY) * (ZOOM - 1);
+        panX = (r.left + r.width / 2 - e.clientX) * (DOUBLE_TAP_ZOOM - 1);
+        panY = (r.top + r.height / 2 - e.clientY) * (DOUBLE_TAP_ZOOM - 1);
+        clampPan();
       }
       img.classList.add('settling');
       applyTransform();
       drawBoxes();
     },
-    onPanStart: () => {},
+    onPanStart: () => { img.classList.remove('settling'); },
+    onPanMove: (dx, dy) => {
+      panX += dx;
+      panY += dy;
+      applyTransform();
+      drawBoxes();
+    },
+    onPanEnd: () => {
+      img.classList.add('settling');
+      clampPan();
+      applyTransform();
+    },
+    onPinchStart: () => {
+      img.classList.remove('settling');
+      const r = img.getBoundingClientRect();
+      pinchCenterX = r.left + r.width / 2 - panX;
+      pinchCenterY = r.top + r.height / 2 - panY;
+    },
+    onPinchMove: (ratio, cx, cy) => {
+      const next = clamp(zoom * ratio, MIN_ZOOM, MAX_ZOOM);
+      const r = next / zoom; // actual ratio actually applied, after clamping
+      if (r === 1) return;
+      panX = panX * r + (cx - pinchCenterX) * (1 - r);
+      panY = panY * r + (cy - pinchCenterY) * (1 - r);
+      zoom = next;
+      applyTransform();
+      drawBoxes();
+    },
+    onPinchEnd: () => {
+      img.classList.add('settling');
+      if (zoom <= MIN_ZOOM + 0.02) { zoom = MIN_ZOOM; panX = 0; panY = 0; }
+      else clampPan();
+      applyTransform();
+      drawBoxes();
+    },
     onDragStart: (axis) => { dragging = axis; root.dataset.dragging = '1'; img.classList.remove('settling'); },
     onDragX: (dx) => {
       // rubber-band at the ends so the collection feels finite
@@ -323,7 +393,15 @@ export function openLightbox(photos, index, { context = 'photos', personId = nul
       root.dataset.open = '0';
       setTimeout(() => root.remove(), 200);
       unlock();
-      if (useHistory && pushed) history.back();
+      if (useHistory && pushed) {
+        // If the guest swiped before closing, the current hash still carries
+        // the ORIGINAL deep-linked photo id (opening pushed once; every swipe
+        // since only replaced that same entry). back() lands there, and
+        // without this flag the router would treat that hashchange as a
+        // fresh deep link and reopen a stale lightbox instead of closing.
+        suppressNextDeepLink();
+        history.back();
+      }
     },
   };
 

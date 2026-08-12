@@ -280,8 +280,9 @@ face search is not ready yet.
    encodes family resemblance and age.
 5. **People in fewer than 2 distinct photos** are parked as unsorted and get no
    page. Lower `MIN_CLUSTER_PHOTOS` to 1 to include them, at the cost of noise.
-6. **Pinch-zoom is double-tap only.** Custom swipe requires `touch-action: none`,
-   which disables native pinch; real pinch needs a full two-pointer transform.
+6. **Zoom range is 1x-4x.** Two-finger pinch gives continuous zoom, double-tap
+   jumps to 2.5x; panning while zoomed is clamped so the image can't drift
+   fully off-screen.
 7. **Runtime** ≈ 2 s/photo/worker. 78 photos ≈ 3 min at 8 workers; ~2000 photos
    ≈ 25–40 min. Re-runs with no new photos take seconds.
 8. **Hosting ceiling.** ~12 MB of derivatives for 78 photos, projecting to

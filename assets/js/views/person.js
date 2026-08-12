@@ -7,6 +7,7 @@ import { gallery } from '../components/gallery.js';
 import { setHeader } from '../components/appHeader.js';
 import { siteFooter } from '../components/footer.js';
 import { notFoundView } from './notFound.js';
+import { consumeDeepLinkSuppression } from '../util/navGuard.js';
 
 export async function personView({ id, photo }) {
   const [, data] = await Promise.all([getPhotos(), getPeople()]);
@@ -46,7 +47,10 @@ export async function personView({ id, photo }) {
     mounted() {
       heading.focus({ preventScroll: true });
       grid.mounted();
-      if (photo) openDeepLinked(photos, photo, person.id);
+      // Always consume: this hashchange might be the lightbox unwinding its
+      // own history after a swipe-then-close, not a genuine deep link.
+      const suppressed = consumeDeepLinkSuppression();
+      if (photo && !suppressed) openDeepLinked(photos, photo, person.id);
     },
     unmount() { grid.unmount(); },
   };

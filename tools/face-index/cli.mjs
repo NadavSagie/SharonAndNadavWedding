@@ -203,12 +203,14 @@ async function main() {
   await ledger.load();
   const result = identify(cfg, analysable, analysis, ledger, overrides);
 
+  if (result.identityMergeCount) {
+    log.review(`identity consolidation merged ${result.identityMergeCount} cluster pair(s) as the same person`);
+  }
+  for (const r of result.identityReviewPairs.slice(0, 8)) {
+    log.review(`${r.a} ↔ ${r.b}  d=${r.d.toFixed(3)}  → possibly the same person (${r.reason})`);
+  }
   for (const r of result.reviewPairs.slice(0, 8)) {
-    const a = result.people[r.a];
-    const b = result.people[r.b];
-    if (a && b) {
-      log.review(`${a.id} ↔ ${b.id}  d=${r.d.toFixed(3)}  → possibly the same person`);
-    }
+    log.review(`${r.a} ↔ ${r.b}  d=${r.d.toFixed(3)}  → possibly the same person`);
   }
 
   if (args['dry-run']) {
@@ -240,6 +242,8 @@ async function main() {
     peopleNamed: result.people.filter((p) => p.name).length,
     peopleHidden: (result.hidden ?? []).length,
     reviewPairs: result.reviewPairs.length,
+    identityMergeCount: result.identityMergeCount,
+    identityReviewPairs: result.identityReviewPairs.length,
   };
 
   let emitted = { photoCount: 0 };
@@ -255,7 +259,7 @@ async function main() {
   const row = (k, v) => log.info(`${log.c.dim(k.padEnd(12))}${v}`);
   row('photos', `${photos.length} scanned · ${analysable.length} ok · ${failed.length} failed · ${fromCache} cached`);
   row('faces', `${result.detected} detected · ${result.dropped} below threshold · ${result.faces.length} kept · ${result.unsortedFaces} unsorted`);
-  row('people', `${result.people.length} · ${stats.peopleNamed} named · ${stats.peopleHidden} hidden`);
+  row('people', `${result.people.length} · ${stats.peopleNamed} named · ${stats.peopleHidden} hidden · ${result.identityMergeCount} identity merge(s)`);
   row('output', `${log.fmtBytes(deriv.totalBytes)} images (${deriv.totalFiles} files) · ${emitted.photoCount} photos in the index`);
   row('backend', `${backend} · ${cfg.WORKER_COUNT} workers`);
   row('duration', log.fmtDuration(Date.now() - started));
@@ -264,9 +268,10 @@ async function main() {
   if (result.people.length) {
     const unnamed = result.people.filter((p) => !p.name).length;
     console.log(`
-  ${log.c.bold('Next:')} open ${log.c.cyan('face-index/review.json')} to see each detected person and
-  the ${result.reviewPairs.length} borderline pair(s). Name people (start with the couple) and
-  merge/split as needed in ${log.c.cyan('face-index/overrides.json')}, then run
+  ${log.c.bold('Next:')} open ${log.c.cyan('face-index/review.json')} to see each detected person,
+  the ${result.identityReviewPairs.length} possible-duplicate-identity pair(s), and the
+  ${result.reviewPairs.length} borderline within-cluster pair(s). Name people (start with the
+  couple), merge/split as needed in ${log.c.cyan('face-index/overrides.json')}, then run
   ${log.c.cyan('npm run index-faces:recluster')} — it re-uses cached detection and takes seconds.
   ${log.c.dim(`${unnamed} of ${result.people.length} people are currently shown as "Guest N".`)}
 `);

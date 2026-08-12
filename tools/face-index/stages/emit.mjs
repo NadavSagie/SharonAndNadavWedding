@@ -90,20 +90,31 @@ export async function emit(cfg, root, photos, analysis, result, meta) {
 
   // ---- review.json (local working file, safe to commit: no biometrics) -----
   const nameOf = new Map(visible.map((p) => [p.id, p.name ?? `Guest ${p.ordinal}`]));
+  const describePair = (r) => ({
+    a: r.a, b: r.b,
+    nameA: nameOf.get(r.a) ?? '(not shown — hidden or unsorted)',
+    nameB: nameOf.get(r.b) ?? '(not shown — hidden or unsorted)',
+    distance: r.d,
+    reason: r.reason,
+  });
   const reviewOut = {
     generatedAt,
-    note: 'Borderline cluster pairs worth a human decision, plus run warnings. '
-      + 'Resolve them by editing face-index/overrides.json, then run `npm run index-faces:recluster`.',
+    note: 'Two lists below. "possibleDuplicateIdentities" are pairs of DIFFERENT '
+      + 'people who may actually be the same person (the over-segmentation problem) — '
+      + 'if so, add ["<idA>","<idB>"] to "merge" in overrides.json. "mergeCandidates" '
+      + 'are borderline pairs from WITHIN a single cluster decision, less likely to '
+      + 'need action. Resolve either by editing face-index/overrides.json, then run '
+      + '`npm run index-faces:recluster`.',
     thresholds: {
       FACE_SIMILARITY_THRESHOLD: cfg.FACE_SIMILARITY_THRESHOLD,
       SAME_PHOTO_MERGE_THRESHOLD: cfg.SAME_PHOTO_MERGE_THRESHOLD,
       reviewBand: [cfg.FACE_SIMILARITY_THRESHOLD, cfg.FACE_SIMILARITY_THRESHOLD + cfg.MERGE_REVIEW_MARGIN],
+      IDENTITY_CONSOLIDATION_THRESHOLD: cfg.IDENTITY_CONSOLIDATION_THRESHOLD,
+      IDENTITY_CONSOLIDATION_REVIEW_MAX: cfg.IDENTITY_CONSOLIDATION_REVIEW_MAX,
     },
     stats: meta.stats,
-    mergeCandidates: result.reviewPairs.slice(0, 200).map((r) => ({
-      distance: r.d,
-      hint: 'if these are the same person, add ["<idA>","<idB>"] to "merge" in overrides.json',
-    })),
+    possibleDuplicateIdentities: result.identityReviewPairs.slice(0, 300).map(describePair),
+    mergeCandidates: result.reviewPairs.slice(0, 200).map(describePair),
     people: visible.map((p) => ({
       id: p.id,
       name: nameOf.get(p.id),

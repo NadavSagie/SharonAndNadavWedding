@@ -57,8 +57,15 @@ assets/images/t-*.jpg          full-resolution originals (gitignored, local only
    decode once at 4096px → full-frame detection pass → **overlapping tile passes**
    → merge with IoU-NMS → recompute descriptors for small faces from
    native-resolution crops. Results are cached per photo.
-3. **cluster** — agglomerative, average linkage, euclidean distance over the
-   128-d descriptors.
+3. **cluster** — two tiers:
+   - **tier 1**: agglomerative, average linkage, euclidean distance over the
+     128-d descriptors. Forms clean clusters, but under-merges a person once
+     their cluster grows large and appearance-diverse (see "Why identity
+     consolidation matters" below).
+   - **tier 2 (identity consolidation)**: compares *centroids* of the tier-1
+     clusters and merges pairs that are both centroid-close and corroborated by
+     a genuine close raw-face pair. Fixes the same person being split into
+     several separate "people" — see `tools/face-index/lib/identity-consolidation.mjs`.
 4. **identify** — assign stable person ids from the ledger, apply `overrides.json`,
    choose each person's representative face, rank.
 5. **derivatives** — one full-resolution decode per photo produces its thumbnail,
@@ -72,6 +79,32 @@ SSD-MobileNetV1 resizes *any* input to 512×512 internally. A 100px face in a
 you feed it. Tiling — not a bigger full-frame pass — is what recovers guests
 sitting at tables. Concretely: `t-1.jpg` yields **0 faces** from a full-frame pass
 and **1** once tiling is on.
+
+### Why identity consolidation matters
+
+Average linkage (tier 1) compares a *candidate* fragment against the *average*
+of an existing cluster. That average-linkage distance inflates purely from a
+cluster's own internal diversity as it grows — a person with 200+ photos across
+many angles, lighting conditions and expressions can end up with an average
+distance to a brand-new photo of themselves that is **higher** than the merge
+threshold, even though every one of their existing faces is compatible with it.
+Measured on this dataset: the groom's cluster overlapped 25-36 of 36 faces with
+several of his own genuine fragments, yet average-linkage distance to those
+fragments was 0.46-0.71 — comfortably over threshold despite being the same
+person. The practical symptom is one real person appearing as many separate
+"people" — worse the more photos they're in, so it hits the couple hardest.
+
+Tier 2 fixes this by comparing cluster **centroids** (mean embeddings) instead —
+a centroid built from many faces is a multi-reference-embedding representation
+of a person and does not inflate with population diversity the way average
+linkage does. Every merge additionally requires a genuine close raw face-to-face
+pair between the two clusters (`IDENTITY_CONSOLIDATION_MIN_RAW_PAIR`), which
+stops two clusters from merging just because their means coincidentally align.
+The auto-merge threshold (`IDENTITY_CONSOLIDATION_THRESHOLD = 0.36`) is
+deliberately far tighter than tier 1's 0.46 — see config.mjs for the calibration
+data (40 manually-audited real pairs across the distance range). Pairs between
+the merge threshold and a review ceiling are written to `review.json`'s
+`possibleDuplicateIdentities`, never silently merged.
 
 ---
 
@@ -159,6 +192,9 @@ Every tunable lives in `tools/face-index/config.mjs`. No magic numbers elsewhere
 | `MIN_FACE_FRONTALITY` | `0.12` | Rejects backs of heads and ears. |
 | `MIN_CLUSTER_QUALITY` | `0.72` | Mean face quality a cluster needs to be shown as a person. |
 | `MIN_CLUSTER_PHOTOS` | `2` | Fewer distinct photos than this → parked as unsorted. |
+| `IDENTITY_CONSOLIDATION_THRESHOLD` | `0.36` | Centroid distance below which two already-formed clusters auto-merge as the same person (tier 2). Independently calibrated — not the same knob as `FACE_SIMILARITY_THRESHOLD`. |
+| `IDENTITY_CONSOLIDATION_REVIEW_MAX` | `0.44` | Centroid distance up to this is reported in `review.json` as a possible duplicate, not auto-merged. |
+| `IDENTITY_CONSOLIDATION_MIN_RAW_PAIR` | `0.46` | Corroboration guard: a centroid-eligible merge still needs one genuinely close raw face pair. |
 | `PHOTO_LONG_EDGE` / `PHOTO_QUALITY` | `1600` / `76` | Lightbox image size. Lower these if you approach the hosting limit. |
 | `SIZE_BUDGET_MB` | `850` | Warn before GitHub Pages' hard 1 GB cap. |
 
@@ -234,7 +270,10 @@ face search is not ready yet.
 2. **The same person can appear more than once.** Sunglasses, strong profiles and
    very different lighting produce descriptors far enough apart to form their own
    cluster. Sunglasses are the worst case: they destroy the eye region the
-   descriptor leans on. Fix with `merge`.
+   descriptor leans on. Tier-2 identity consolidation auto-merges the confident
+   cases; genuinely uncertain ones (coloured party lighting, motion blur, a badly
+   cropped multi-face detection) land in `review.json`'s `possibleDuplicateIdentities`
+   for a quick manual `merge` — expect a handful of these on any real wedding set.
 3. **Faces below ~1.5% of frame width are invisible to the detector.** Tiling
    recovers most guests at tables; genuinely tiny background faces are missed.
 4. **Close relatives and children cluster together more readily** — the embedding

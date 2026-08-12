@@ -174,7 +174,15 @@ export function clusterFaces(faces, cfg, onProgress = () => {}) {
     for (let j = i + 1; j < liveIdx.length; j++) {
       const d = avg(liveIdx[i], liveIdx[j]);
       if (d > cfg.FACE_SIMILARITY_THRESHOLD && d <= reviewMax) {
-        reviewPairs.push({ a: liveIdx[i], b: liveIdx[j], d: Number(d.toFixed(4)) });
+        // Face ids (stable strings), not array indices: cluster-array positions
+        // don't survive the quality gating / sorting that happens after this
+        // function returns, which previously made review pairs resolve to the
+        // wrong (or no) person once reported.
+        reviewPairs.push({
+          d: Number(d.toFixed(4)),
+          faceA: faces[members[liveIdx[i]][0]].id,
+          faceB: faces[members[liveIdx[j]][0]].id,
+        });
       }
     }
   }

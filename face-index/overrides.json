@@ -18,29 +18,50 @@
 
   "people": {
     "p-0001": { "name": "Nadav", "featured": true, "order": 1 },
-    "p-0002": { "name": "Sharon", "featured": true, "order": 2 },
-    "p-0025": { "hidden": true, "note": "confirmed not a distinguishable guest — removed by request" },
-    "p-0026": { "hidden": true, "note": "confirmed not a distinguishable guest — removed by request" },
-    "p-0027": { "hidden": true, "note": "confirmed not a distinguishable guest — removed by request" },
-    "p-0028": { "hidden": true, "note": "confirmed not a distinguishable guest — removed by request" }
+    "p-0002": { "name": "Sharon", "featured": true, "order": 2 }
   },
 
-  "_mergeNotes": [
-    "p-0003 is Nadav wearing sunglasses. Sunglasses destroy the eye region the",
-    "descriptor relies on, so it clustered separately (d=0.478 to p-0001) even",
-    "though p-0001 already contains other sunglasses shots of him. Verified by eye.",
+  "_mergeHistoryNote": [
+    "The 78-photo-era merge entries (old p-0003/p-0004/.../p-0029) were removed",
+    "from this list on 2026-08-12: after re-clustering the full 875-photo set,",
+    "none of those ids exist anymore (fresh clustering + tier-2 identity",
+    "consolidation reshaped everything). The 4 people hidden from that era",
+    "(old p-0025-p-0028) are also gone as independent entities for the same",
+    "reason — nothing currently needs hiding under those old ids.",
     "",
-    "p-0004, p-0005, p-0006, p-0012, p-0014, p-0017, p-0029 were flagged in the",
-    "original review as red-haired women each ~0.48-0.56 from Sharon (p-0002) but",
-    "0.51-0.59 from EACH OTHER — a hub pattern that usually means 'near a big",
-    "cluster's centroid, not each other'. Confirmed by Nadav & Sharon these are",
-    "all Sharon anyway, so merged.",
+    "Below are duplicate-identity fragments found in the 875-photo set that",
+    "identity consolidation (tools/face-index/lib/identity-consolidation.mjs)",
+    "did NOT auto-merge because their centroid distance landed in the",
+    "conservative gray-zone (0.36-0.44) rather than clearing the 0.36 auto-merge",
+    "bar — see face-index/review.json 'possibleDuplicateIdentities' for the",
+    "full list with distances. Each entry below was independently verified by",
+    "visually comparing face crops before merging, per the instruction not to",
+    "merge on guest-number alone.",
     "",
-    "p-0011, p-0013 confirmed by Nadav & Sharon to be Nadav; merged."
+    "Nadav: p-0097 (extreme side profile), p-0159 (side profile, laughing),",
+    "p-0213 (sunglasses — same failure mode as the original p-0003 case: dark",
+    "glasses destroy the eye region the descriptor relies on) all visually",
+    "confirmed as Nadav. p-0239 and p-0250 were NOT merged — both crops show two",
+    "men embracing cheek-to-cheek and it isn't possible to confirm by eye which",
+    "face is the detected one; left for manual review in overrides if you can",
+    "confirm from the original photos.",
+    "",
+    "Sharon: p-0248, p-0259, p-0283, p-0286, p-0299, p-0301, p-0311, p-0312 all",
+    "visually confirmed as Sharon (her distinctive curly auburn hair is clearly",
+    "visible in each crop) despite elevated embedding distance — these are",
+    "mostly candid shots under coloured party lighting or with motion blur,",
+    "which measurably degrades embedding quality without changing what a human",
+    "eye can plainly see. p-0279 and p-0199 were NOT merged: p-0279's crop is",
+    "mostly obscured by hair/shadow and too uncertain to confirm; p-0199's faces",
+    "landed in a different existing cluster (p-0086) with a similar-looking",
+    "hairstyle rather than with Sharon — worth a manual look if you recognise",
+    "p-0086. p-0123 and p-0269 (originally on the list) were checked and their",
+    "faces are NOT Sharon by any measure (embedding distance 0.6+, clearly a",
+    "different person) — they were correctly left unmerged, now sitting unsorted."
   ],
   "merge": [
-    ["p-0001", "p-0003", "p-0011", "p-0013"],
-    ["p-0002", "p-0004", "p-0005", "p-0006", "p-0012", "p-0014", "p-0017", "p-0029"]
+    ["p-0001", "p-0097", "p-0159", "p-0213"],
+    ["p-0002", "p-0248", "p-0259", "p-0283", "p-0286", "p-0299", "p-0301", "p-0311", "p-0312"]
   ],
 
   "split": {},

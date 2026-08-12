@@ -87,6 +87,43 @@ export const CONFIG = {
   MICRO_CLUSTER_THRESHOLD: 0.4,
   /** Clusters spanning fewer distinct (de-duplicated) photos than this are parked
    *  as "unsorted" rather than shown as people. */
+  /*
+   * ---- identity consolidation (tier 2) ----
+   * Average-linkage (tier 1, above) forms clean clusters, but it systematically
+   * UNDER-merges a person who accumulates many photos across varied angles,
+   * lighting and expressions: comparing a new small fragment against the AVERAGE
+   * of a large diverse cluster inflates the distance from within-cluster
+   * heterogeneity alone, independent of whether the fragment truly belongs.
+   * Confirmed on this dataset: Nadav's cluster overlap with 7 of his real
+   * fragments was 25-36/36 faces, but average-linkage distance was 0.46-0.71 —
+   * comfortably OVER threshold despite being the same person.
+   *
+   * Fix: a second pass compares CENTROIDS (mean embeddings) of already-formed
+   * clusters instead of raw pairwise averages. A centroid built from many faces
+   * is itself a "multiple reference embeddings" representation of a person, and
+   * centroid-to-centroid distance does not inflate with population diversity the
+   * way average-linkage does.
+   *
+   * This is NOT the same as lowering FACE_SIMILARITY_THRESHOLD: it is a distinct
+   * metric with its own independently-calibrated cutoff. Calibrated by manually
+   * auditing 40 real pairs across the distance range on this dataset:
+   *   <= 0.34   ~90% same-person (clear)
+   *   0.34-0.40 ~60-80%, rising ambiguity
+   *   0.40-0.46 ~40-50%, includes CLEAR false positives (different genders/ages)
+   * 0.46 (tier 1's threshold) is measurably unsafe for this metric; 0.36 sits
+   * solidly in the reliable band with margin before the ambiguous zone.
+   */
+  IDENTITY_CONSOLIDATION_THRESHOLD: 0.36,
+  /** Centroid distances above the threshold but at or below this are surfaced in
+   *  review.json as "possible same identity" rather than auto-merged or ignored. */
+  IDENTITY_CONSOLIDATION_REVIEW_MAX: 0.44,
+  /** Corroboration guard: even a centroid pair under threshold is only merged if
+   *  at least one genuine RAW face-to-face pair between the two clusters also
+   *  clears this bar. Reuses FACE_SIMILARITY_THRESHOLD as an upper sanity bound —
+   *  guards against two clusters' means coincidentally aligning with no
+   *  individual face pair actually resembling each other. */
+  IDENTITY_CONSOLIDATION_MIN_RAW_PAIR: 0.46,
+
   MIN_CLUSTER_PHOTOS: 2,
   MIN_CLUSTER_FACES: 2,
   /** Mean composite quality a cluster must reach to be shown as a person.

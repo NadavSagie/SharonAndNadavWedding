@@ -9,6 +9,7 @@
 
 import * as log from '../lib/log.mjs';
 import { clusterFaces, centroid, distanceToCentroid } from '../lib/cluster.mjs';
+import { consolidateIdentities } from '../lib/identity-consolidation.mjs';
 import { faceQuality, groupNearDuplicates, distinctGroups } from '../lib/quality.mjs';
 import { hamming } from '../lib/image.mjs';
 
@@ -50,11 +51,26 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
   const photoMeta = photos.map((p) => ({ id: p.id, phash: analysis.get(p.id)?.phash ?? null }));
   const dupeGroups = groupNearDuplicates(photoMeta, hamming, cfg.PHASH_HAMMING_DUPE);
 
-  // ---- cluster ------------------------------------------------------------
-  const { clusters, reviewPairs } = clusterFaces(faces, cfg, (phase, i, n) => {
+  // ---- cluster (tier 1: average-linkage) ----------------------------------
+  const { clusters: rawClusters, reviewPairs } = clusterFaces(faces, cfg, (phase, i, n) => {
     if (n > 2000) log.progress(i, n, log.c.dim(phase));
   });
   log.endProgress();
+
+  // ---- consolidate (tier 2: cross-cluster centroid matching) --------------
+  // Fixes same-person-multiple-clusters: average-linkage under-merges a person
+  // once their cluster is large and appearance-diverse (see config.mjs for the
+  // full diagnosis and calibration). Tier 1 is untouched; this only merges
+  // pairs of ALREADY-FORMED clusters whose centroids are closely and
+  // corroborated by at least one genuinely close raw face pair.
+  const { clusters, mergeCount: identityMergeCount, identityReviewPairs } = consolidateIdentities(
+    faces, rawClusters, cfg,
+    (phase, i, n) => { if (n > 50) log.progress(i, n, log.c.dim(phase)); },
+  );
+  log.endProgress();
+  if (identityMergeCount) {
+    log.info(log.c.dim(`identity consolidation: ${identityMergeCount} cluster pair(s) merged as the same person`));
+  }
 
   // ---- score every face within its cluster -------------------------------
   const clusterInfo = clusters.map((c) => {
@@ -209,5 +225,21 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
 
   for (const s of stale) log.warn('overrides', `stale reference: ${s}`);
 
-  return { people, unsortedFaces, reviewPairs, faces, dupeGroups, dropped, detected, stale, hidden };
+  // ---- resolve review pairs to person ids ---------------------------------
+  // Both review lists were emitted with stable face ids rather than array
+  // positions specifically so they survive to this point correctly: cluster
+  // array order does not match the final, filtered-and-sorted `people` order.
+  const personOfFaceId = new Map();
+  for (const p of people) for (const s of p.scored) personOfFaceId.set(s.faceId, p.id);
+  const resolve = (pairs) => pairs
+    .map((r) => ({ ...r, a: personOfFaceId.get(r.faceA) ?? null, b: personOfFaceId.get(r.faceB) ?? null }))
+    .filter((r) => r.a && r.b && r.a !== r.b);
+
+  const resolvedReviewPairs = resolve(reviewPairs);
+  const resolvedIdentityReviewPairs = resolve(identityReviewPairs);
+
+  return {
+    people, unsortedFaces, reviewPairs: resolvedReviewPairs, identityReviewPairs: resolvedIdentityReviewPairs,
+    identityMergeCount, faces, dupeGroups, dropped, detected, stale, hidden,
+  };
 }

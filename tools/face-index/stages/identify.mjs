@@ -57,14 +57,15 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
   });
   log.endProgress();
 
-  // ---- consolidate (tier 2: cross-cluster centroid matching) --------------
+  // ---- consolidate (tier 2: cross-cluster centroid + raw-pair matching) ---
   // Fixes same-person-multiple-clusters: average-linkage under-merges a person
   // once their cluster is large and appearance-diverse (see config.mjs for the
   // full diagnosis and calibration). Tier 1 is untouched; this only merges
-  // pairs of ALREADY-FORMED clusters whose centroids are closely and
-  // corroborated by at least one genuinely close raw face pair.
+  // pairs of ALREADY-FORMED clusters, either by close-and-corroborated
+  // centroids or by multiple independent close raw face pairs (see
+  // identity-consolidation.mjs for why both paths exist).
   const { clusters, mergeCount: identityMergeCount, identityReviewPairs } = consolidateIdentities(
-    faces, rawClusters, cfg,
+    faces, rawClusters, cfg, dupeGroups,
     (phase, i, n) => { if (n > 50) log.progress(i, n, log.c.dim(phase)); },
   );
   log.endProgress();
@@ -113,10 +114,34 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
 
   // ---- stable IDs ---------------------------------------------------------
   const forLedger = keep.map((c) => ({ faceIds: c.scored.map((s) => s.faceId) }));
-  const { ids, reused, allocated } = ledger.assign(forLedger, cfg.LEDGER_MATCH_MIN_OVERLAP);
+  const { ids, reused, allocated, folded, foldInto } = ledger.assign(forLedger, cfg.LEDGER_MATCH_MIN_OVERLAP);
 
-  let people = keep.map((c, i) => ({
-    id: ids[i],
+  // Fold clusters the ledger recognises as already belonging to a DIFFERENT,
+  // larger cluster claimed earlier this run (see Ledger.assign) into that
+  // cluster's face list, instead of giving them a row of their own. Without
+  // this, a fragment that a past run deliberately merged into someone —
+  // by a human override or by identity consolidation — gets a brand new id
+  // every time it re-forms as its own tiny cluster, silently undoing the
+  // merge and resurfacing the exact duplicate it fixed.
+  for (let i = 0; i < keep.length; i++) {
+    if (foldInto[i] < 0) continue;
+    const target = keep[foldInto[i]];
+    target.scored.push(...keep[i].scored);
+    for (const p of keep[i].photos) target.photos.add(p);
+  }
+  for (let i = 0; i < keep.length; i++) {
+    if (foldInto[i] < 0) continue;
+    const target = keep[foldInto[i]];
+    target.distinctGroups = distinctGroups([...target.photos], dupeGroups);
+    target.meanQuality = target.scored.reduce((s, x) => s + x.q, 0) / target.scored.length;
+  }
+  if (folded) log.info(log.c.dim(`ledger: ${folded} fragment(s) re-folded into a previously-merged identity`));
+
+  const keptAfterFold = keep.filter((_, i) => foldInto[i] < 0);
+  const idsAfterFold = ids.filter((_, i) => foldInto[i] < 0);
+
+  let people = keptAfterFold.map((c, i) => ({
+    id: idsAfterFold[i],
     faceIds: c.scored.map((s) => s.faceId),
     scored: c.scored,
     photoIds: [...c.photos],
@@ -220,7 +245,8 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
   const named = people.filter((p) => p.name).length;
   log.stage(4, 6, 'identify',
     `${log.c.bold(String(people.length))} people`
-    + log.c.dim(`  ·  ${named} named  ·  ${reused} ids reused  ·  ${allocated} new`)
+    + log.c.dim(`  ·  ${named} named  ·  ${reused} ids reused  ·  ${allocated} new`
+      + (folded ? `  ·  ${folded} re-folded` : ''))
     + (hidden.length ? log.c.dim(`  ·  ${hidden.length} hidden`) : ''));
 
   for (const s of stale) log.warn('overrides', `stale reference: ${s}`);
@@ -240,6 +266,6 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
 
   return {
     people, unsortedFaces, reviewPairs: resolvedReviewPairs, identityReviewPairs: resolvedIdentityReviewPairs,
-    identityMergeCount, faces, dupeGroups, dropped, detected, stale, hidden,
+    identityMergeCount, ledgerFoldCount: folded, faces, dupeGroups, dropped, detected, stale, hidden,
   };
 }

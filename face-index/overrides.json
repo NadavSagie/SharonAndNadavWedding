@@ -18,7 +18,11 @@
 
   "people": {
     "p-0001": { "name": "Nadav", "featured": true, "order": 1 },
-    "p-0002": { "name": "Sharon", "featured": true, "order": 2 }
+    "p-0002": { "name": "Sharon", "featured": true, "order": 2 },
+    "p-0206": {
+      "hidden": true,
+      "note": "Flagged for deletion in a manual duplicate-identity review. Investigated: 3 faces across 2 photos, consistently the same person, but embedding distance to the 2-3 nearby clusters it was suspected of duplicating was too weak/ambiguous to identify which one (if any) it actually duplicates -- see face-index/review.json for the closest candidates. Hidden rather than merged into a guess."
+    }
   },
 
   "_mergeHistoryNote": [
@@ -57,11 +61,36 @@
     "hairstyle rather than with Sharon — worth a manual look if you recognise",
     "p-0086. p-0123 and p-0269 (originally on the list) were checked and their",
     "faces are NOT Sharon by any measure (embedding distance 0.6+, clearly a",
-    "different person) — they were correctly left unmerged, now sitting unsorted."
+    "different person) — they were correctly left unmerged, now sitting unsorted.",
+    "",
+    "2026-08-13: broader duplicate-identity audit (prompted by a guest-reported",
+    "list, but not limited to it -- see face-index/review.json for the full",
+    "possibleDuplicateIdentities band this was drawn from). Same rule as",
+    "above: only merged after visually confirming the actual face crops, never",
+    "on distance or guest-number alone. p-0240 visually confirmed as Nadav",
+    "(profile/laughing shots, same failure mode as p-0097/p-0159 above).",
+    "p-0288, p-0278, p-0266, p-0302 visually confirmed as the same person as",
+    "p-0022, p-0132, p-0131, p-0113 respectively. p-0242 visually confirmed as",
+    "the same person as p-0082 -- found independently during verification, not",
+    "on the reported list. p-0214 visually confirmed as the same person as",
+    "p-0021. p-0086 was explicitly NOT merged into Sharon despite a close",
+    "centroid distance (0.38): its own crops show at least two different women",
+    "(one with Sharon's distinctive curly auburn hair, one without) -- it is an",
+    "internally impure cluster and needs a manual split (which crops belong to",
+    "Sharon) before any merge, not a blanket merge that would misattribute the",
+    "other woman's photos to Sharon. p-0188 vs p-0282 (also close, 0.37) was",
+    "checked and is a clear false lead -- bald man vs a different man with a",
+    "full head of hair -- correctly left unmerged."
   ],
   "merge": [
-    ["p-0001", "p-0097", "p-0159", "p-0213"],
-    ["p-0002", "p-0248", "p-0259", "p-0283", "p-0286", "p-0299", "p-0301", "p-0311", "p-0312"]
+    ["p-0001", "p-0097", "p-0159", "p-0213", "p-0240"],
+    ["p-0002", "p-0248", "p-0259", "p-0283", "p-0286", "p-0299", "p-0301", "p-0311", "p-0312"],
+    ["p-0022", "p-0288"],
+    ["p-0132", "p-0278"],
+    ["p-0131", "p-0266"],
+    ["p-0113", "p-0302"],
+    ["p-0082", "p-0242"],
+    ["p-0021", "p-0214"]
   ],
 
   "split": {},

@@ -76,23 +76,59 @@ export class Ledger {
    * silently orphans the old id, allocating a duplicate and losing whatever
    * name/overrides were attached to it. Overlap coefficient scores a clean
    * subset relationship at ~1.0 regardless of how much the superset grew.
+   *
+   * @returns { ids, reused, allocated, folded, foldInto }
+   * `foldInto[i]` is the cluster INDEX (into the input `clusters` array) that
+   * cluster i's faces should be merged into, or -1 if cluster i keeps its own
+   * id (`ids[i]`). A folded cluster's `ids[i]` entry is null.
    */
   assign(clusters, minOverlap) {
     const order = clusters
       .map((c, i) => ({ i, size: c.faceIds.length }))
       .sort((a, b) => b.size - a.size);
 
-    const taken = new Set();
-    const result = new Array(clusters.length);
+    // Snapshot anchors as they were BEFORE this call, and read only from this
+    // snapshot for matching. Without it, the moment the biggest cluster for an
+    // identity wins its id, refresh() immediately shrinks that id's anchors
+    // down to just this run's cluster — erasing the very history a SMALLER,
+    // later-processed fragment of the SAME identity needs to fold against.
+    // (Concretely: Nadav's ledger entry held faces from 3 small fragments a
+    // past run had merged into him; his main cluster claiming p-0001 first
+    // and refreshing immediately made those 3 fragments' own re-detected
+    // clusters see an anchor set that no longer contained them, so each
+    // minted a brand-new id instead of folding back in — resurrecting
+    // exactly the duplicates a previous fix had already resolved.)
+    const snapshotAnchors = new Map(
+      Object.entries(this.data.people).map(([pid, e]) => [pid, e.anchors ?? []]),
+    );
+
+    const taken = new Map(); // pid -> cluster index that claimed it
+    const result = new Array(clusters.length).fill(null);
+    const foldInto = new Array(clusters.length).fill(-1);
     let reused = 0;
     let allocated = 0;
+    let folded = 0;
 
     for (const { i } of order) {
       const ids = new Set(clusters[i].faceIds);
       let bestId = null;
       let bestScore = 0;
+      let bestInter = -1;
+      // Every OTHER id that also clears minOverlap against this same cluster.
+      // Tier-1/tier-2 clustering can merge two clusters that used to be
+      // separate, ledger-tracked identities into one BEFORE the ledger ever
+      // sees them (it only sees the already-merged result) — so more than
+      // one historical id can legitimately match the same cluster here.
+      // Without explicitly retiring the runners-up, a matched-but-not-chosen
+      // id sits unchanged (never aliased, never refreshed) and can win the
+      // SAME cluster outright on a future run purely because its small,
+      // untouched anchor set happens to still be a cleaner subset than the
+      // real, actively-refreshed id's — silently stealing someone's identity
+      // and name. See config.mjs's identity-consolidation notes for how this
+      // was actually observed on this dataset.
+      const runnersUp = [];
 
-      for (const [pid, entry] of Object.entries(this.data.people)) {
+      for (const [pid, anchors] of snapshotAnchors) {
         if (taken.has(pid)) continue;
         // An id that a previous `merge` absorbed into another id must not be a
         // candidate again — otherwise the absorbed fragment (which still holds
@@ -100,27 +136,72 @@ export class Ledger {
         // the canonical id it was merged into, resurrecting a name that was
         // explicitly folded away.
         if (this.data.aliases[pid]) continue;
-        const anchors = entry.anchors ?? [];
         if (!anchors.length) continue;
         let inter = 0;
         for (const a of anchors) if (ids.has(a)) inter++;
         const overlap = inter / Math.min(ids.size, anchors.length);
-        if (overlap > bestScore) { bestScore = overlap; bestId = pid; }
+        if (overlap < minOverlap) continue;
+        runnersUp.push(pid);
+        // Rank by ABSOLUTE overlapping face count first, overlap ratio only
+        // as a tiebreak. A large, established identity that accounts for
+        // most (though maybe not literally 100%) of this cluster is far
+        // stronger evidence than a small anchor set that happens to be a
+        // perfectly clean subset purely because it never tracked much —
+        // ranking by ratio alone let a 22-face zombie id outscore (1.0 vs
+        // 0.96) the real 230-of-244-face match and steal the identity.
+        if (inter > bestInter || (inter === bestInter && overlap > bestScore)) {
+          bestInter = inter; bestScore = overlap; bestId = pid;
+        }
       }
 
-      let id;
       if (bestId && bestScore >= minOverlap) {
-        id = bestId;
-        this.refresh(id, clusters[i].faceIds);
+        this.refresh(bestId, clusters[i].faceIds);
+        taken.set(bestId, i);
+        result[i] = bestId;
+        for (const pid of runnersUp) if (pid !== bestId) this.addAlias(pid, bestId);
         reused++;
-      } else {
-        id = this.allocate(clusters[i].faceIds);
-        allocated++;
+        continue;
       }
-      taken.add(id);
+
+      // No live, unclaimed id recognises this cluster directly. Before minting
+      // a new one, check whether its faces are already accounted for under an
+      // id that ANOTHER (necessarily larger, since we process largest-first)
+      // cluster claimed earlier THIS round — reading its PRE-run anchors (the
+      // snapshot), not its just-refreshed ones, for exactly the reason in the
+      // comment above `snapshotAnchors`. This is what makes a merge decision
+      // — human, via overrides.json, or automatic, via identity consolidation —
+      // survive future re-runs: once merged, the absorbed fragment's own id is
+      // aliased and can never be a direct-match candidate again (see above),
+      // but its faces still re-form as their own tiny cluster on every future
+      // run. Without this check they'd silently mint a BRAND NEW id every
+      // time — undoing the merge and resurfacing the exact duplicate it fixed.
+      // Safe by construction: this can only fire when the SAME content-derived
+      // face ids already sit in some other id's anchor set, i.e. a face-for-
+      // face identical re-detection of a fragment someone already decided
+      // belongs there — never a fresh similarity judgement on new faces.
+      let foldScore = 0;
+      let foldTarget = -1;
+      for (const [pid, claimerIdx] of taken) {
+        const anchors = snapshotAnchors.get(pid) ?? [];
+        if (!anchors.length) continue;
+        let inter = 0;
+        for (const a of anchors) if (ids.has(a)) inter++;
+        const overlap = inter / Math.min(ids.size, anchors.length);
+        if (overlap > foldScore) { foldScore = overlap; foldTarget = claimerIdx; }
+      }
+
+      if (foldTarget >= 0 && foldScore >= minOverlap) {
+        foldInto[i] = foldTarget;
+        folded++;
+        continue;
+      }
+
+      const id = this.allocate(clusters[i].faceIds);
+      taken.set(id, i);
       result[i] = id;
+      allocated++;
     }
 
-    return { ids: result, reused, allocated };
+    return { ids: result, reused, allocated, folded, foldInto };
   }
 }

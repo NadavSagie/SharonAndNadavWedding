@@ -244,6 +244,7 @@ async function main() {
     reviewPairs: result.reviewPairs.length,
     identityMergeCount: result.identityMergeCount,
     identityReviewPairs: result.identityReviewPairs.length,
+    ledgerFoldCount: result.ledgerFoldCount,
   };
 
   let emitted = { photoCount: 0 };
@@ -259,7 +260,8 @@ async function main() {
   const row = (k, v) => log.info(`${log.c.dim(k.padEnd(12))}${v}`);
   row('photos', `${photos.length} scanned · ${analysable.length} ok · ${failed.length} failed · ${fromCache} cached`);
   row('faces', `${result.detected} detected · ${result.dropped} below threshold · ${result.faces.length} kept · ${result.unsortedFaces} unsorted`);
-  row('people', `${result.people.length} · ${stats.peopleNamed} named · ${stats.peopleHidden} hidden · ${result.identityMergeCount} identity merge(s)`);
+  row('people', `${result.people.length} · ${stats.peopleNamed} named · ${stats.peopleHidden} hidden · `
+    + `${result.identityMergeCount} identity merge(s) · ${result.ledgerFoldCount} ledger re-fold(s)`);
   row('output', `${log.fmtBytes(deriv.totalBytes)} images (${deriv.totalFiles} files) · ${emitted.photoCount} photos in the index`);
   row('backend', `${backend} · ${cfg.WORKER_COUNT} workers`);
   row('duration', log.fmtDuration(Date.now() - started));

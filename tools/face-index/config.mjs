@@ -123,6 +123,48 @@ export const CONFIG = {
    *  guards against two clusters' means coincidentally aligning with no
    *  individual face pair actually resembling each other. */
   IDENTITY_CONSOLIDATION_MIN_RAW_PAIR: 0.46,
+  /**
+   * Second, independent path into the SAME auto-merge decision (still bounded
+   * by IDENTITY_CONSOLIDATION_REVIEW_MAX — never wider than the existing
+   * review band): a pair whose CENTROIDS never reach the strict 0.36 bar can
+   * still be trusted if there is more than one genuinely close raw face pair,
+   * each from a DIFFERENT (non-burst) photo on both sides.
+   *
+   * Diagnosed on this dataset (875 photos): every pair confirmed by hand as
+   * the same person that the strict path was missing had a centroid in
+   * 0.36-0.44 — i.e. the strict path's own review band — but the strict path
+   * has NO route to auto-merge anything in that band no matter how much raw
+   * evidence exists for it; the corroboration guard above only ever runs for
+   * pairs that already cleared 0.36. That is the actual gap, not the 0.36
+   * number itself, which stays untouched here.
+   *
+   * A single close pair is NOT enough on its own to open this path — spot-
+   * checking candidates confirmed real false positives with exactly one raw
+   * pair under 0.46 (e.g. two different men, one bald, whose single closest
+   * crop pair still scored 0.446). Requiring >=2 independent pairs, each in a
+   * DISTINCT dupe-photo-group (so a single burst of near-identical frames
+   * can't be counted twice), is what separates those from confirmed matches:
+   * every hand-confirmed pair recovered this way had >=2 such pairs, every
+   * checked false positive had 0.
+   */
+  IDENTITY_CONSOLIDATION_STRONG_PAIR: 0.40,
+  IDENTITY_CONSOLIDATION_MIN_STRONG_PAIRS: 2,
+  /**
+   * Purity guard on the strong-pair path: at least this fraction of the
+   * SMALLER cluster's own distinct photo-groups must individually take part
+   * in a strong pairing, not just >=2 pairings total. Tier 1 occasionally
+   * average-links two different people into one cluster (matching hair,
+   * always side by side in frame); if the strong-pair evidence only ever
+   * touches a minority of that cluster's own appearances, it's evidence
+   * about a SLICE of the cluster, not the whole thing, and merging the whole
+   * cluster on that basis drags an unrelated person's photos along with it.
+   * Caught on this dataset: a cluster later found (via an independent
+   * ledger-identity collision) to contain a second, already-identified
+   * person had corroboration touching only ~3/11 (27%) of its own groups —
+   * 0.5 sits above that with real margin, while every hand-confirmed true
+   * match recovered by the strong-pair path covered its smaller side fully.
+   */
+  IDENTITY_CONSOLIDATION_MIN_STRONG_COVERAGE: 0.5,
 
   MIN_CLUSTER_PHOTOS: 2,
   MIN_CLUSTER_FACES: 2,

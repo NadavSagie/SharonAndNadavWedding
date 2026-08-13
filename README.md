@@ -17,7 +17,8 @@ ever sent to a third-party service.
 npm install
 npm run index-faces:doctor   # pre-flight check — run this first
 npm run index-faces          # analyse the photos and build the index
-npm run verify               # integrity + privacy checks
+npm run review               # http://localhost:5175 — resolve possible duplicates by eye
+npm run verify                # integrity + privacy checks
 npm run serve                # http://localhost:3000
 ```
 
@@ -179,6 +180,39 @@ share these pages.
 
 ---
 
+## Reviewing possible duplicates by eye (`npm run review`)
+
+Editing `overrides.json` by hand from `review.json` works, but for dozens of
+borderline pairs it's slow. `npm run review` opens a local, one-pair-at-a-time
+UI at `http://localhost:5175` that reads `review.json`'s
+`possibleDuplicateIdentities` directly — nothing is hardcoded — and shows both
+guests' cover photo, photo count and several sample shots side by side.
+
+Decide **Same Person** (`Y`), **Different People** (`N`), or **Skip** (`S`);
+`←`/`→` move without deciding, and revisiting a decided pair shows what you
+picked so you can change your mind. Decisions are written immediately to
+`face-index/review-decisions.json` — **the face index itself is untouched**
+until you click **Apply Decisions**, which:
+
+1. backs up `overrides.json`, the ledger, and `data/*.json` to
+   `face-index/backups/<timestamp>/`,
+2. merges every "same person" pair into `overrides.json`'s `merge` (chaining
+   A=B=C into one group, extending an existing group instead of fighting it
+   for a canonical id),
+3. records every "different people" pair in a new `doNotMerge` list — a hard
+   veto enforced inside identity consolidation and the ledger, so that pair
+   can never be auto-merged or silently re-folded together on a *future* run
+   either, however close the embeddings end up looking,
+4. re-runs the real pipeline (`--from=cluster` — the same one `npm run
+   index-faces:recluster` runs; nothing about clustering is reimplemented
+   here), then
+5. reports before/after guest counts and cross-checks that every "same"
+   decision actually consolidated, every "different" decision actually
+   stayed apart, and no existing person's photos shrank — surfacing anything
+   unexpected as a conflict instead of hiding it.
+
+---
+
 ## Configuration
 
 Every tunable lives in `tools/face-index/config.mjs`. No magic numbers elsewhere.
@@ -302,7 +336,9 @@ data/                       generated, committed — what the browser fetches
 face-index/
   overrides.json            hand-edited corrections
   review.json               generated: who was found, what to review
+  review-decisions.json     generated: your same/different/skip calls from `npm run review`
   .people-ledger.json       stable person ids
+  backups/                  gitignored — pre-apply snapshots from `npm run review`
 .face-cache/                gitignored — face descriptors live here
 assets/
   css/                      tokens, base, layout, gallery, people, lightbox
@@ -312,6 +348,8 @@ assets/
   images/                   originals (gitignored) + t-58-preview.jpg
 tools/
   verify.mjs                integrity + privacy checks
+  review-server.mjs         manual duplicate-review UI backend (`npm run review`)
+  review-ui/                its static frontend — vanilla HTML/CSS/JS, no build step
   face-index/
     cli.mjs  config.mjs  doctor.mjs  worker.mjs
     engine/                 backend ladder, per-photo analysis

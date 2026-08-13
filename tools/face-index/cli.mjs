@@ -59,12 +59,12 @@ const STAGES = ['analyze', 'cluster', 'derivatives', 'emit'];
 async function loadOverrides(file) {
   try {
     const raw = JSON.parse(await fs.readFile(file, 'utf8'));
-    return { version: 1, people: {}, merge: [], split: {}, ignoreFaces: [], ignorePhotos: [], ...raw };
+    return { version: 1, people: {}, merge: [], split: {}, ignoreFaces: [], ignorePhotos: [], doNotMerge: [], ...raw };
   } catch (err) {
     if (err.code !== 'ENOENT') {
       log.warn('overrides', `could not parse overrides.json (${err.message}) — continuing without it`);
     }
-    return { version: 1, people: {}, merge: [], split: {}, ignoreFaces: [], ignorePhotos: [] };
+    return { version: 1, people: {}, merge: [], split: {}, ignoreFaces: [], ignorePhotos: [], doNotMerge: [] };
   }
 }
 
@@ -79,12 +79,17 @@ async function ensureOverridesTemplate(file) {
         'After editing, run: npm run index-faces:recluster  (fast, ~seconds)',
         'Applied in order: ignoreFaces/ignorePhotos -> split -> merge -> people attributes.',
         'Person ids are stable across re-runs; see face-index/review.json for candidates.',
+        'doNotMerge is a hard veto: those two ids will never be auto-merged or',
+        'folded together, this run or any future one, however close the evidence',
+        'looks. Written by tools/review-server.mjs (npm run review) when you mark',
+        'a pair "different people" — safe to hand-edit too.',
       ],
       _example: {
         people: { 'p-0001': { name: 'Nadav', featured: true, order: 1 } },
         merge: [['p-0004', 'p-0019']],
         split: { 'p-0009': { moveFaces: ['t-3_1102x0455'], to: 'p-0090' } },
         ignoreFaces: ['t-77_0201x0033'],
+        doNotMerge: [['p-0022', 'p-0288']],
       },
       version: 1,
       people: {},
@@ -92,6 +97,7 @@ async function ensureOverridesTemplate(file) {
       split: {},
       ignoreFaces: [],
       ignorePhotos: [],
+      doNotMerge: [],
     };
     await fs.mkdir(path.dirname(file), { recursive: true });
     await fs.writeFile(file, `${JSON.stringify(template, null, 2)}\n`, 'utf8');

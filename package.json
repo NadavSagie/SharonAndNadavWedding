@@ -11,7 +11,8 @@
     "index-faces:recluster": "node tools/face-index/cli.mjs --from=cluster",
     "index-faces:derivatives": "node tools/face-index/cli.mjs --only=derivatives",
     "serve": "npx --yes serve . -l 3000",
-    "verify": "node tools/verify.mjs"
+    "verify": "node tools/verify.mjs",
+    "review": "node tools/review-server.mjs"
   },
   "dependencies": {
     "@tensorflow/tfjs": "4.22.0",

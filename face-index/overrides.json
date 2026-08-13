@@ -1,4 +1,426 @@
 {
+  "version": 1,
+  "people": {
+    "p-0001": {
+      "name": "Nadav",
+      "featured": true,
+      "order": 1
+    },
+    "p-0002": {
+      "name": "Sharon",
+      "featured": true,
+      "order": 2
+    },
+    "p-0206": {
+      "hidden": true,
+      "note": "Flagged for deletion in a manual duplicate-identity review. Investigated: 3 faces across 2 photos, consistently the same person, but embedding distance to the 2-3 nearby clusters it was suspected of duplicating was too weak/ambiguous to identify which one (if any) it actually duplicates -- see face-index/review.json for the closest candidates. Hidden rather than merged into a guess."
+    }
+  },
+  "merge": [
+    [
+      "p-0001",
+      "p-0097",
+      "p-0159",
+      "p-0213",
+      "p-0240",
+      "p-0265",
+      "p-0256",
+      "p-0273"
+    ],
+    [
+      "p-0002",
+      "p-0248",
+      "p-0259",
+      "p-0283",
+      "p-0286",
+      "p-0299",
+      "p-0301",
+      "p-0311",
+      "p-0312",
+      "p-0086",
+      "p-0249",
+      "p-0243"
+    ],
+    [
+      "p-0022",
+      "p-0288"
+    ],
+    [
+      "p-0132",
+      "p-0278"
+    ],
+    [
+      "p-0131",
+      "p-0266"
+    ],
+    [
+      "p-0113",
+      "p-0302"
+    ],
+    [
+      "p-0082",
+      "p-0242"
+    ],
+    [
+      "p-0021",
+      "p-0214"
+    ],
+    [
+      "p-0125",
+      "p-0192"
+    ],
+    [
+      "p-0007",
+      "p-0260",
+      "p-0244"
+    ],
+    [
+      "p-0072",
+      "p-0198"
+    ],
+    [
+      "p-0108",
+      "p-0112"
+    ],
+    [
+      "p-0073",
+      "p-0255"
+    ],
+    [
+      "p-0090",
+      "p-0156"
+    ],
+    [
+      "p-0118",
+      "p-0151"
+    ],
+    [
+      "p-0155",
+      "p-0300"
+    ],
+    [
+      "p-0009",
+      "p-0150"
+    ],
+    [
+      "p-0209",
+      "p-0285"
+    ],
+    [
+      "p-0042",
+      "p-0161"
+    ],
+    [
+      "p-0087",
+      "p-0234",
+      "p-0169"
+    ],
+    [
+      "p-0060",
+      "p-0222"
+    ],
+    [
+      "p-0023",
+      "p-0057"
+    ],
+    [
+      "p-0046",
+      "p-0103"
+    ],
+    [
+      "p-0053",
+      "p-0304"
+    ],
+    [
+      "p-0193",
+      "p-0284"
+    ],
+    [
+      "p-0010",
+      "p-0246"
+    ],
+    [
+      "p-0065",
+      "p-0174"
+    ]
+  ],
+  "split": {},
+  "ignoreFaces": [],
+  "ignorePhotos": [],
+  "doNotMerge": [
+    [
+      "p-0188",
+      "p-0282"
+    ],
+    [
+      "p-0132",
+      "p-0055"
+    ],
+    [
+      "p-0074",
+      "p-0227"
+    ],
+    [
+      "p-0089",
+      "p-0051"
+    ],
+    [
+      "p-0229",
+      "p-0273"
+    ],
+    [
+      "p-0001",
+      "p-0229"
+    ],
+    [
+      "p-0121",
+      "p-0060"
+    ],
+    [
+      "p-0273",
+      "p-0282"
+    ],
+    [
+      "p-0045",
+      "p-0161"
+    ],
+    [
+      "p-0265",
+      "p-0279"
+    ],
+    [
+      "p-0089",
+      "p-0086"
+    ],
+    [
+      "p-0089",
+      "p-0082"
+    ],
+    [
+      "p-0072",
+      "p-0042"
+    ],
+    [
+      "p-0232",
+      "p-0156"
+    ],
+    [
+      "p-0081",
+      "p-0132"
+    ],
+    [
+      "p-0055",
+      "p-0274"
+    ],
+    [
+      "p-0088",
+      "p-0001"
+    ],
+    [
+      "p-0062",
+      "p-0304"
+    ],
+    [
+      "p-0009",
+      "p-0161"
+    ],
+    [
+      "p-0173",
+      "p-0158"
+    ],
+    [
+      "p-0055",
+      "p-0265"
+    ],
+    [
+      "p-0229",
+      "p-0274"
+    ],
+    [
+      "p-0089",
+      "p-0105"
+    ],
+    [
+      "p-0144",
+      "p-0089"
+    ],
+    [
+      "p-0229",
+      "p-0256"
+    ],
+    [
+      "p-0001",
+      "p-0053"
+    ],
+    [
+      "p-0144",
+      "p-0134"
+    ],
+    [
+      "p-0153",
+      "p-0115"
+    ],
+    [
+      "p-0150",
+      "p-0086"
+    ],
+    [
+      "p-0086",
+      "p-0151"
+    ],
+    [
+      "p-0081",
+      "p-0055"
+    ],
+    [
+      "p-0229",
+      "p-0265"
+    ],
+    [
+      "p-0139",
+      "p-0016"
+    ],
+    [
+      "p-0071",
+      "p-0073"
+    ],
+    [
+      "p-0180",
+      "p-0188"
+    ],
+    [
+      "p-0057",
+      "p-0085"
+    ],
+    [
+      "p-0055",
+      "p-0116"
+    ],
+    [
+      "p-0089",
+      "p-0134"
+    ],
+    [
+      "p-0057",
+      "p-0070"
+    ],
+    [
+      "p-0024",
+      "p-0089"
+    ],
+    [
+      "p-0089",
+      "p-0158"
+    ],
+    [
+      "p-0016",
+      "p-0055"
+    ],
+    [
+      "p-0156",
+      "p-0136"
+    ],
+    [
+      "p-0102",
+      "p-0071"
+    ],
+    [
+      "p-0050",
+      "p-0055"
+    ],
+    [
+      "p-0174",
+      "p-0086"
+    ],
+    [
+      "p-0139",
+      "p-0055"
+    ],
+    [
+      "p-0222",
+      "p-0068"
+    ],
+    [
+      "p-0150",
+      "p-0045"
+    ],
+    [
+      "p-0075",
+      "p-0107"
+    ],
+    [
+      "p-0058",
+      "p-0188"
+    ],
+    [
+      "p-0239",
+      "p-0211"
+    ],
+    [
+      "p-0009",
+      "p-0002"
+    ],
+    [
+      "p-0002",
+      "p-0118"
+    ],
+    [
+      "p-0023",
+      "p-0085"
+    ],
+    [
+      "p-0023",
+      "p-0070"
+    ],
+    [
+      "p-0090",
+      "p-0136"
+    ],
+    [
+      "p-0065",
+      "p-0002"
+    ],
+    [
+      "p-0060",
+      "p-0068"
+    ],
+    [
+      "p-0009",
+      "p-0045"
+    ],
+    [
+      "p-0001",
+      "p-0282"
+    ],
+    [
+      "p-0045",
+      "p-0042"
+    ],
+    [
+      "p-0001",
+      "p-0279"
+    ],
+    [
+      "p-0089",
+      "p-0002"
+    ],
+    [
+      "p-0232",
+      "p-0090"
+    ],
+    [
+      "p-0062",
+      "p-0053"
+    ],
+    [
+      "p-0009",
+      "p-0042"
+    ],
+    [
+      "p-0055",
+      "p-0001"
+    ]
+  ],
   "_readme": [
     "Hand-edited. The indexer NEVER writes this file.",
     "After editing run: npm run index-faces:recluster  (seconds — detection is cached)",
@@ -11,20 +433,9 @@
     "merge": "[[\"p-0001\",\"p-0003\"]] — first id is canonical, the rest are absorbed",
     "split": "{ \"p-0009\": { moveFaces: [\"t-3_1102x0455\"], to: \"p-0090\" } }",
     "ignoreFaces": "[\"t-77_0201x0033\"] — drop a single bad detection",
-    "ignorePhotos": "[\"t-58-preview\"] — drop a whole photo"
+    "ignorePhotos": "[\"t-58-preview\"] — drop a whole photo",
+    "doNotMerge": "[[\"p-0022\",\"p-0288\"]] — hard veto: never auto-merge or fold these two together, this run or any future one"
   },
-
-  "version": 1,
-
-  "people": {
-    "p-0001": { "name": "Nadav", "featured": true, "order": 1 },
-    "p-0002": { "name": "Sharon", "featured": true, "order": 2 },
-    "p-0206": {
-      "hidden": true,
-      "note": "Flagged for deletion in a manual duplicate-identity review. Investigated: 3 faces across 2 photos, consistently the same person, but embedding distance to the 2-3 nearby clusters it was suspected of duplicating was too weak/ambiguous to identify which one (if any) it actually duplicates -- see face-index/review.json for the closest candidates. Hidden rather than merged into a guess."
-    }
-  },
-
   "_mergeHistoryNote": [
     "The 78-photo-era merge entries (old p-0003/p-0004/.../p-0029) were removed",
     "from this list on 2026-08-12: after re-clustering the full 875-photo set,",
@@ -82,18 +493,9 @@
     "checked and is a clear false lead -- bald man vs a different man with a",
     "full head of hair -- correctly left unmerged."
   ],
-  "merge": [
-    ["p-0001", "p-0097", "p-0159", "p-0213", "p-0240"],
-    ["p-0002", "p-0248", "p-0259", "p-0283", "p-0286", "p-0299", "p-0301", "p-0311", "p-0312"],
-    ["p-0022", "p-0288"],
-    ["p-0132", "p-0278"],
-    ["p-0131", "p-0266"],
-    ["p-0113", "p-0302"],
-    ["p-0082", "p-0242"],
-    ["p-0021", "p-0214"]
-  ],
-
-  "split": {},
-  "ignoreFaces": [],
-  "ignorePhotos": []
+  "_reviewToolNote": [
+    "Last applied from the manual review UI at 2026-08-13T12:29:29.763Z:",
+    "28 pair(s) marked same-person, 68 marked different-people.",
+    "Backup of the pre-apply state: face-index/backups/2026-08-13T12-29-29-723Z/"
+  ]
 }

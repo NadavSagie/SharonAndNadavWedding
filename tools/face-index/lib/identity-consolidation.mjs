@@ -31,6 +31,11 @@
  *
  * Pairs in the gray zone that clear neither path are reported, never silently
  * merged.
+ *
+ * A third, human-driven input overrides both paths: `doNotMerge` (from the
+ * manual review tool, `overrides.json`) is a hard veto that blocks a specific
+ * pair of identities from ever being united here, however strong the
+ * evidence looks — see `violatesDoNotMerge` below.
  */
 
 function dist(a, b, dim) {
@@ -96,7 +101,28 @@ function distinctGroupCount(photos, groupOf) {
   return s.size;
 }
 
-export function consolidateIdentities(faces, clusters, cfg, dupeGroups, onProgress = () => {}) {
+/** True if merging nodeA and nodeB would unite two identities a human has
+ *  explicitly declared different people (see the manual review tool).
+ *  `doNotMergeAnchors` is [[SetOfFaceIdsA, SetOfFaceIdsB], ...] — each side's
+ *  anchor face ids as recorded in the ledger at the time of that decision.
+ *  Checked by ANY overlap, not a ratio: this is a hard human veto, not a
+ *  similarity judgement, so it errs maximally conservative on purpose. */
+function violatesDoNotMerge(nodeA, nodeB, faces, doNotMergeAnchors) {
+  if (!doNotMergeAnchors?.length) return false;
+  const idsA = new Set(nodeA.members.map((i) => faces[i].id));
+  const idsB = new Set(nodeB.members.map((i) => faces[i].id));
+  const anyOverlap = (idSet, anchorSet) => {
+    for (const id of idSet) if (anchorSet.has(id)) return true;
+    return false;
+  };
+  for (const [setA, setB] of doNotMergeAnchors) {
+    if ((anyOverlap(idsA, setA) && anyOverlap(idsB, setB))
+      || (anyOverlap(idsA, setB) && anyOverlap(idsB, setA))) return true;
+  }
+  return false;
+}
+
+export function consolidateIdentities(faces, clusters, cfg, dupeGroups, doNotMergeAnchors = [], onProgress = () => {}) {
   if (clusters.length < 2) return { clusters, mergeCount: 0, identityReviewPairs: [] };
   const dim = faces[0].descriptor.length;
   const groupOf = (photoId) => dupeGroups?.get(photoId) ?? photoId;
@@ -135,11 +161,13 @@ export function consolidateIdentities(faces, clusters, cfg, dupeGroups, onProgre
   const blocked = new Set();
 
   function strictEligible(i, j) {
+    if (violatesDoNotMerge(nodes[i], nodes[j], faces, doNotMergeAnchors)) return false;
     const minRaw = minRawPairDistance(nodes[i].members, nodes[j].members, faces, dim);
     return minRaw <= cfg.IDENTITY_CONSOLIDATION_MIN_RAW_PAIR;
   }
 
   function strongEligible(i, j) {
+    if (violatesDoNotMerge(nodes[i], nodes[j], faces, doNotMergeAnchors)) return false;
     const { strongCount, coveredA, coveredB } = rawEvidence(
       nodes[i].members, nodes[j].members, faces, dim, groupOf, cfg.IDENTITY_CONSOLIDATION_STRONG_PAIR,
     );

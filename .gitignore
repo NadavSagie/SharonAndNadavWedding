@@ -14,3 +14,8 @@ desktop.ini
 .DS_Store
 .vscode/
 assets/images/*.zip
+
+# Pre-apply safety snapshots from tools/review-server.mjs (npm run review).
+# Each is fully superseded by the next one; git itself is the real history
+# for these files, so these are local rollback insurance, not an archive.
+face-index/backups/

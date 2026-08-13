@@ -56,6 +56,10 @@ export class Ledger {
     return this.data.people[id]?.ordinal ?? 0;
   }
 
+  anchorsOf(id) {
+    return this.data.people[id]?.anchors ?? [];
+  }
+
   refresh(id, anchors) {
     if (!this.data.people[id]) {
       this.data.people[id] = { anchors, ordinal: this.data.nextOrdinal++ };
@@ -77,15 +81,29 @@ export class Ledger {
    * name/overrides were attached to it. Overlap coefficient scores a clean
    * subset relationship at ~1.0 regardless of how much the superset grew.
    *
+   * @param doNotMerge  [[idA, idB], ...] pairs a human has explicitly decided
+   *   are DIFFERENT people (see the manual review tool). Enforced at both
+   *   places identities actually get united below — aliasing a runner-up and
+   *   folding a fragment — never at direct-match, since recognising a
+   *   cluster as an id it already legitimately owns isn't a merge decision.
    * @returns { ids, reused, allocated, folded, foldInto }
    * `foldInto[i]` is the cluster INDEX (into the input `clusters` array) that
    * cluster i's faces should be merged into, or -1 if cluster i keeps its own
    * id (`ids[i]`). A folded cluster's `ids[i]` entry is null.
    */
-  assign(clusters, minOverlap) {
+  assign(clusters, minOverlap, doNotMerge = []) {
     const order = clusters
       .map((c, i) => ({ i, size: c.faceIds.length }))
       .sort((a, b) => b.size - a.size);
+
+    // pid -> Set of ids a human has said pid is NOT the same person as.
+    const forbidden = new Map();
+    for (const [a, b] of doNotMerge) {
+      if (!forbidden.has(a)) forbidden.set(a, new Set());
+      if (!forbidden.has(b)) forbidden.set(b, new Set());
+      forbidden.get(a).add(b);
+      forbidden.get(b).add(a);
+    }
 
     // Snapshot anchors as they were BEFORE this call, and read only from this
     // snapshot for matching. Without it, the moment the biggest cluster for an
@@ -158,7 +176,15 @@ export class Ledger {
         this.refresh(bestId, clusters[i].faceIds);
         taken.set(bestId, i);
         result[i] = bestId;
-        for (const pid of runnersUp) if (pid !== bestId) this.addAlias(pid, bestId);
+        // A runner-up that a human has explicitly declared a DIFFERENT person
+        // from bestId must never be aliased away, however well its old,
+        // untouched anchor set happens to overlap this cluster right now —
+        // aliasing is exactly the permanent-merge action the decision forbids.
+        for (const pid of runnersUp) {
+          if (pid === bestId) continue;
+          if (forbidden.get(pid)?.has(bestId)) continue;
+          this.addAlias(pid, bestId);
+        }
         reused++;
         continue;
       }
@@ -187,7 +213,21 @@ export class Ledger {
         let inter = 0;
         for (const a of anchors) if (ids.has(a)) inter++;
         const overlap = inter / Math.min(ids.size, anchors.length);
-        if (overlap > foldScore) { foldScore = overlap; foldTarget = claimerIdx; }
+        if (overlap > foldScore) {
+          // Folding this cluster into pid unites them exactly as permanently
+          // as an alias does — same "a human said these are different
+          // people" guard, checked against every id pid must stay apart from.
+          const partners = forbidden.get(pid);
+          if (partners) {
+            let blockedByHuman = false;
+            for (const other of partners) {
+              const otherAnchors = snapshotAnchors.get(other) ?? [];
+              if (otherAnchors.some((a) => ids.has(a))) { blockedByHuman = true; break; }
+            }
+            if (blockedByHuman) continue;
+          }
+          foldScore = overlap; foldTarget = claimerIdx;
+        }
       }
 
       if (foldTarget >= 0 && foldScore >= minOverlap) {

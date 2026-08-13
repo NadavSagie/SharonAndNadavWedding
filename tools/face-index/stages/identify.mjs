@@ -64,8 +64,16 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
   // pairs of ALREADY-FORMED clusters, either by close-and-corroborated
   // centroids or by multiple independent close raw face pairs (see
   // identity-consolidation.mjs for why both paths exist).
+  //
+  // doNotMerge (from the manual review tool) is resolved to each side's
+  // CURRENT ledger anchors here, once, rather than passed through as bare
+  // ids — tier 2 only ever sees raw face indices, never ledger ids.
+  const doNotMergeAnchors = (overrides.doNotMerge ?? [])
+    .map(([a, b]) => [new Set(ledger.anchorsOf(a)), new Set(ledger.anchorsOf(b))])
+    .filter(([setA, setB]) => setA.size && setB.size);
+
   const { clusters, mergeCount: identityMergeCount, identityReviewPairs } = consolidateIdentities(
-    faces, rawClusters, cfg, dupeGroups,
+    faces, rawClusters, cfg, dupeGroups, doNotMergeAnchors,
     (phase, i, n) => { if (n > 50) log.progress(i, n, log.c.dim(phase)); },
   );
   log.endProgress();
@@ -114,7 +122,9 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
 
   // ---- stable IDs ---------------------------------------------------------
   const forLedger = keep.map((c) => ({ faceIds: c.scored.map((s) => s.faceId) }));
-  const { ids, reused, allocated, folded, foldInto } = ledger.assign(forLedger, cfg.LEDGER_MATCH_MIN_OVERLAP);
+  const { ids, reused, allocated, folded, foldInto } = ledger.assign(
+    forLedger, cfg.LEDGER_MATCH_MIN_OVERLAP, overrides.doNotMerge ?? [],
+  );
 
   // Fold clusters the ledger recognises as already belonging to a DIFFERENT,
   // larger cluster claimed earlier this run (see Ledger.assign) into that

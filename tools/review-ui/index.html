@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Duplicate Identity Review</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-title">Duplicate Identity Review</div>
+  <div class="progress" id="progress">Loading…</div>
+</header>
+
+<div class="summary" id="summary"></div>
+
+<main id="app">
+  <div class="loading" id="loading">Loading review data…</div>
+</main>
+
+<template id="pair-template">
+  <div class="pair-meta">
+    <div class="pair-distance"></div>
+    <div class="pair-reason"></div>
+  </div>
+
+  <div class="pair-grid">
+    <section class="guest-card" data-side="a">
+      <img class="guest-cover" alt="">
+      <h2 class="guest-name"></h2>
+      <p class="guest-count"></p>
+      <div class="sample-grid"></div>
+    </section>
+
+    <div class="vs">vs</div>
+
+    <section class="guest-card" data-side="b">
+      <img class="guest-cover" alt="">
+      <h2 class="guest-name"></h2>
+      <p class="guest-count"></p>
+      <div class="sample-grid"></div>
+    </section>
+  </div>
+
+  <div class="decision-state" id="decision-state"></div>
+</template>
+
+<footer class="actionbar">
+  <div class="nav-buttons">
+    <button id="btn-prev" class="btn btn-quiet" title="Previous (←)">← Prev</button>
+    <button id="btn-next" class="btn btn-quiet" title="Next (→)">Next →</button>
+  </div>
+  <div class="decision-buttons">
+    <button id="btn-different" class="btn btn-different" title="Different People (N)">✕ Different People <kbd>N</kbd></button>
+    <button id="btn-skip" class="btn btn-skip" title="Skip / Review Later (S)">⏭ Skip <kbd>S</kbd></button>
+    <button id="btn-same" class="btn btn-same" title="Same Person (Y)">✓ Same Person <kbd>Y</kbd></button>
+  </div>
+  <div class="apply-wrap">
+    <label class="filter-toggle">
+      <input type="checkbox" id="filter-undecided">
+      Undecided only
+    </label>
+    <button id="btn-apply" class="btn btn-apply">Apply Decisions / Rebuild Identities</button>
+  </div>
+</footer>
+
+<div class="modal-backdrop" id="apply-modal">
+  <div class="modal">
+    <h2 id="apply-modal-title">Rebuild identities?</h2>
+    <div id="apply-modal-body"></div>
+    <div class="modal-actions">
+      <button id="apply-cancel" class="btn btn-quiet">Cancel</button>
+      <button id="apply-confirm" class="btn btn-apply">Yes, rebuild</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

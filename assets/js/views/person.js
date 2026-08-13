@@ -34,12 +34,7 @@ export async function personView({ id, photo }) {
   const head = h('div', { class: 'person-head' },
     h('img', { src: coverSrc(person.id), alt: '', width: 96, height: 96 }),
     heading,
-    h('p', { class: 'count' }, `in ${photos.length} ${photos.length === 1 ? 'photo' : 'photos'}`),
-    !person.name && h('a', {
-      class: 'claim',
-      href: `mailto:nadav.sagie@bagirasys.com?subject=${encodeURIComponent(`Wedding gallery — ${name} is me`)}`
-        + `&body=${encodeURIComponent(`Hi! ${name} (id ${person.id}) is me. My name is:`)}`,
-    }, 'Is this you? Tell us your name'));
+    h('p', { class: 'count' }, `in ${photos.length} ${photos.length === 1 ? 'photo' : 'photos'}`));
 
   return {
     title: name,

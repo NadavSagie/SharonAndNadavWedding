@@ -146,9 +146,3 @@
   font-size: var(--fs-sm); color: var(--c-muted);
   font-variant-numeric: tabular-nums;
 }
-.person-head .claim {
-  display: inline-block; margin-top: var(--sp-4);
-  font-size: var(--fs-sm); color: var(--c-accent);
-  text-decoration: underline; text-underline-offset: 3px;
-  min-height: var(--tap-min); line-height: var(--tap-min);
-}

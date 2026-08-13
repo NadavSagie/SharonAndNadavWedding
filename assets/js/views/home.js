@@ -38,17 +38,7 @@ export async function homeView() {
   const onScroll = () => { if (cue) cue.dataset.hidden = window.scrollY > 40 ? '1' : '0'; };
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  const body = h('div', null,
-    h('p', { class: 'home-say' },
-      'Every photo from our wedding day, and a quick way to find the ones you are in.'),
-    h('div', { class: 'home-cta-row' },
-      h('a', {
-        class: 'cta cta--accent',
-        href: people.ok ? '#/people' : '#/photos',
-      }, people.ok ? 'Find My Photos' : 'View the Gallery')),
-    siteFooter());
-
-  const el = h('div', null, hero, body);
+  const el = h('div', null, hero, siteFooter());
 
   return {
     el,

@@ -9,7 +9,7 @@ import { siteFooter } from '../components/footer.js';
 function personTile(person) {
   const name = person.name
     ? h('span', { class: 'person-name' }, person.name)
-    : h('span', { class: 'person-name' }, 'Guest ', h('span', { class: 'n' }, String(person.ordinal)));
+    : h('span', { class: 'person-name' }, 'Guest ', h('span', { class: 'n' }, String(person.guestNumber)));
 
   return h('a', {
     class: 'person-tile',
@@ -82,7 +82,7 @@ export async function peopleView() {
       grid.replaceChildren(...main.filter((p) => {
         const hit = !q
           || (p.name?.toLowerCase().includes(q))
-          || `guest ${p.ordinal}`.includes(q);
+          || `guest ${p.guestNumber}`.includes(q);
         if (hit) shown++;
         return hit;
       }).map(personTile));

@@ -39,12 +39,27 @@ export function photoById(id) {
   return photosIndex?.get(id) ?? null;
 }
 
+/**
+ * Guest numbers are re-derived here from photo count, not taken from the
+ * indexer's `ordinal` (a ledger-stable ID used only to keep person IDs
+ * consistent across re-indexes). "Guest 1" is always whoever has the most
+ * photos, "Guest 2" the next-most, and so on with no gaps — computed once
+ * per unnamed guest so every page (grid, person header, lightbox chips,
+ * search) agrees on the same number for the same person.
+ */
+function assignGuestNumbers(people) {
+  const unnamed = people.filter((p) => !p.name);
+  unnamed.sort((a, b) => (b.photoCount - a.photoCount) || ((a.ordinal ?? 0) - (b.ordinal ?? 0)));
+  unnamed.forEach((p, i) => { p.guestNumber = i + 1; });
+}
+
 /** Never rejects: a missing/broken people.json degrades to "no face data". */
 export function getPeople() {
   return once('people', async () => {
     try {
       const raw = await getJson('data/people.json');
       const people = (raw.people ?? []).filter((p) => p.photos?.length);
+      assignGuestNumbers(people);
       return {
         ok: people.length > 0,
         people,
@@ -68,7 +83,7 @@ export function getPhotoFaces() {
 }
 
 export function displayName(person) {
-  return person?.name ?? `Guest ${person?.ordinal ?? '?'}`;
+  return person?.name ?? `Guest ${person?.guestNumber ?? '?'}`;
 }
 
 /** Featured (the couple) first, then by photo count, then by stable ordinal. */

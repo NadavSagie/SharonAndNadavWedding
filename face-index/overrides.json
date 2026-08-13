@@ -34,6 +34,14 @@
     "p-0267": {
       "hidden": true,
       "note": "Deleted per guest request 2026-08-13 (was Guest 146). A real, internally-consistent bystander (glasses, same across both photos) -- hidden, not merged, since it doesn't match anyone else."
+    },
+    "p-0075": {
+      "cover": "t-356_1928x0552",
+      "note": "Cover pinned per guest request 2026-08-13 (was Guest 10) -- cosmetic only, no change to identity/photos."
+    },
+    "p-0051": {
+      "cover": "t-640_2144x0648",
+      "note": "Cover pinned per guest request 2026-08-13 (was Guest 20) -- cosmetic only, no change to identity/photos."
     }
   },
   "merge": [

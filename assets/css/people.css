@@ -68,40 +68,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Long tail ---------------------------------------------------------------- */
-
-.people-tail {
-  margin: var(--sp-8) auto 0;
-  padding: 0 var(--gutter);
-  max-width: var(--content-max);
-}
-.people-tail > summary {
-  cursor: pointer; list-style: none;
-  display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
-  min-height: var(--tap-min);
-  font-size: var(--fs-sm); font-weight: 600; color: var(--c-ink-soft);
-}
-.people-tail > summary::-webkit-details-marker { display: none; }
-.people-tail > summary::after {
-  content: ""; width: 7px; height: 7px;
-  border-right: 1.6px solid var(--c-muted); border-bottom: 1.6px solid var(--c-muted);
-  transform: rotate(45deg) translateY(-2px);
-  transition: transform var(--dur-2) var(--ease-out);
-}
-.people-tail[open] > summary::after { transform: rotate(-135deg) translateY(-2px); }
-.people-tail .people-grid { padding-top: var(--sp-5); }
-
-.people-foot {
-  text-align: center;
-  margin-top: var(--sp-8);
-  padding: 0 var(--gutter);
-}
-.people-foot a { color: var(--c-accent); text-decoration: underline; text-underline-offset: 3px; }
-.people-foot .privacy {
-  max-width: 52ch; margin: var(--sp-5) auto 0;
-  font-size: var(--fs-xs); color: var(--c-muted); line-height: 1.7;
-}
-
 /* Person page header ------------------------------------------------------- */
 
 .person-head {

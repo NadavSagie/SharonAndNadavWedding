@@ -51,13 +51,7 @@ export async function peopleView() {
   const featured = sorted.filter((p) => p.featured);
   const rest = sorted.filter((p) => !p.featured);
 
-  // People in a single photo go behind a disclosure so the main grid stays
-  // scannable — but they are never hidden. At a wedding, the guest who appears
-  // in exactly one photo is emotionally the most important case of all.
-  const main = rest.filter((p) => p.photoCount > 1);
-  const tail = rest.filter((p) => p.photoCount === 1);
-
-  const grid = h('div', { class: 'people-grid' }, main.map(personTile));
+  const grid = h('div', { class: 'people-grid' }, rest.map(personTile));
 
   // Visually hidden — not a visible page section, just the per-route focus
   // target every view uses so screen readers announce the new page on nav.
@@ -71,18 +65,6 @@ export async function peopleView() {
   }
 
   parts.push(grid);
-
-  if (tail.length) {
-    parts.push(h('details', { class: 'people-tail' },
-      h('summary', null, `Faces in only one photo (${tail.length})`),
-      h('div', { class: 'people-grid' }, tail.map(personTile))));
-  }
-
-  parts.push(h('div', { class: 'people-foot' },
-    h('a', { href: '#/photos' }, `Not finding yourself? Browse all ${photos.length} photos →`),
-    h('p', { class: 'privacy' },
-      'Faces were grouped automatically on a private computer, not by a cloud service. '
-      + 'Grouping is not perfect — the same person can appear more than once.')));
 
   parts.push(siteFooter());
 

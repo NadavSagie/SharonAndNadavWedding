@@ -165,17 +165,17 @@ button, a, summary, input {
 
 .site-footer {
   border-top: 1px solid var(--c-line);
-  margin-top: var(--sp-9);
-  padding: var(--sp-8) var(--gutter) calc(var(--sp-8) + env(safe-area-inset-bottom));
+  margin-top: var(--sp-6);
+  padding: var(--sp-4) var(--gutter) calc(var(--sp-4) + env(safe-area-inset-bottom));
   text-align: center;
 }
 .site-footer .mark {
   font-family: var(--font-display);
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
   color: var(--c-ink);
 }
 .site-footer .note {
-  max-width: 52ch; margin: var(--sp-4) auto 0;
-  font-size: var(--fs-xs); color: var(--c-muted); line-height: 1.7;
+  max-width: 52ch; margin: var(--sp-2) auto 0;
+  font-size: var(--fs-xs); color: var(--c-muted); line-height: 1.5;
 }
 .site-footer a { color: var(--c-accent); text-decoration: underline; text-underline-offset: 3px; }

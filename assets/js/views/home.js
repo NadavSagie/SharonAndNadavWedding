@@ -1,13 +1,12 @@
 /**
  * Home. The hero markup lives inline in index.html so it is the LCP and paints
  * before this module runs; on first render we adopt that node rather than
- * rebuilding it. Everything below the fold is added here.
+ * rebuilding it. The hero IS the whole page — no footer, nothing below the fold.
  */
 
 import { h } from '../util/dom.js';
 import { getPhotos, getPeople } from '../data.js';
 import { setHeader } from '../components/appHeader.js';
-import { siteFooter } from '../components/footer.js';
 
 let heroNode = null;
 export function adoptHero(node) { heroNode = node; }
@@ -38,10 +37,8 @@ export async function homeView() {
   const onScroll = () => { if (cue) cue.dataset.hidden = window.scrollY > 40 ? '1' : '0'; };
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  const el = h('div', null, hero, siteFooter());
-
   return {
-    el,
+    el: hero,
     title: null,
     unmount() { window.removeEventListener('scroll', onScroll); },
   };

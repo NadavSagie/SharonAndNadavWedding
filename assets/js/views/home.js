@@ -33,13 +33,8 @@ export async function homeView() {
   const altLink = hero.querySelector('.hero-alt');
   if (altLink) altLink.firstChild.textContent = `or browse all ${photos.length} photos `;
 
-  const cue = hero.querySelector('#hero-cue');
-  const onScroll = () => { if (cue) cue.dataset.hidden = window.scrollY > 40 ? '1' : '0'; };
-  window.addEventListener('scroll', onScroll, { passive: true });
-
   return {
     el: hero,
     title: null,
-    unmount() { window.removeEventListener('scroll', onScroll); },
   };
 }

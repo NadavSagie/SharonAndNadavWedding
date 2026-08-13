@@ -118,22 +118,3 @@
   .hero-alt:hover { color: var(--c-on-dark); }
 }
 
-.hero-cue {
-  position: absolute; left: 50%; bottom: max(var(--sp-3), env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  opacity: 0.5; transition: opacity var(--dur-2);
-}
-.hero-cue svg {
-  width: 18px; height: 18px;
-  fill: none; stroke: var(--c-on-dark); stroke-width: 1.6;
-  stroke-linecap: round; stroke-linejoin: round;
-}
-.hero-cue[data-hidden="1"] { opacity: 0; }
-@media (prefers-reduced-motion: no-preference) {
-  .hero-cue { animation: bob 2.2s ease-in-out infinite; }
-}
-@keyframes bob {
-  0%, 100% { transform: translate(-50%, 0); }
-  50%      { transform: translate(-50%, 6px); }
-}
-

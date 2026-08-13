@@ -72,7 +72,7 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
     .map(([a, b]) => [new Set(ledger.anchorsOf(a)), new Set(ledger.anchorsOf(b))])
     .filter(([setA, setB]) => setA.size && setB.size);
 
-  const { clusters, mergeCount: identityMergeCount, identityReviewPairs } = consolidateIdentities(
+  const { clusters, mergeCount: identityMergeCount, identityReviewPairs, impureClusters } = consolidateIdentities(
     faces, rawClusters, cfg, dupeGroups, doNotMergeAnchors,
     (phase, i, n) => { if (n > 50) log.progress(i, n, log.c.dim(phase)); },
   );
@@ -274,8 +274,15 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
   const resolvedReviewPairs = resolve(reviewPairs);
   const resolvedIdentityReviewPairs = resolve(identityReviewPairs);
 
+  // impureClusters' two faces belong to the SAME cluster by construction, so
+  // this resolves to a single person id per flag rather than a/b pair.
+  const resolvedImpureClusters = (impureClusters ?? [])
+    .map((r) => ({ ...r, person: personOfFaceId.get(r.faceA) ?? null }))
+    .filter((r) => r.person);
+
   return {
     people, unsortedFaces, reviewPairs: resolvedReviewPairs, identityReviewPairs: resolvedIdentityReviewPairs,
+    impureClusters: resolvedImpureClusters,
     identityMergeCount, ledgerFoldCount: folded, faces, dupeGroups, dropped, detected, stale, hidden,
   };
 }

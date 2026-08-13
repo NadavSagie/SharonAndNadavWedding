@@ -99,12 +99,16 @@ export async function emit(cfg, root, photos, analysis, result, meta) {
   });
   const reviewOut = {
     generatedAt,
-    note: 'Two lists below. "possibleDuplicateIdentities" are pairs of DIFFERENT '
+    note: 'Three lists below. "possibleDuplicateIdentities" are pairs of DIFFERENT '
       + 'people who may actually be the same person (the over-segmentation problem) — '
       + 'if so, add ["<idA>","<idB>"] to "merge" in overrides.json. "mergeCandidates" '
       + 'are borderline pairs from WITHIN a single cluster decision, less likely to '
-      + 'need action. Resolve either by editing face-index/overrides.json, then run '
-      + '`npm run index-faces:recluster`.',
+      + 'need action. "impureClusters" flags a SINGLE person id whose own two '
+      + 'farthest-apart faces look suspiciously unlike each other — it may secretly '
+      + 'be two different people tier 1 merged together; check the two named faces '
+      + 'by eye, and if they really are different people use "split" in '
+      + 'overrides.json to pull the wrong one out. Resolve any of these by editing '
+      + 'face-index/overrides.json, then run `npm run index-faces:recluster`.',
     thresholds: {
       FACE_SIMILARITY_THRESHOLD: cfg.FACE_SIMILARITY_THRESHOLD,
       SAME_PHOTO_MERGE_THRESHOLD: cfg.SAME_PHOTO_MERGE_THRESHOLD,
@@ -115,6 +119,14 @@ export async function emit(cfg, root, photos, analysis, result, meta) {
     stats: meta.stats,
     possibleDuplicateIdentities: result.identityReviewPairs.slice(0, 300).map(describePair),
     mergeCandidates: result.reviewPairs.slice(0, 200).map(describePair),
+    impureClusters: (result.impureClusters ?? []).slice(0, 200).map((r) => ({
+      person: r.person,
+      name: nameOf.get(r.person) ?? '(not shown — hidden or unsorted)',
+      clusterSize: r.clusterSize,
+      faceA: r.faceA,
+      faceB: r.faceB,
+      internalDistance: r.d,
+    })),
     people: visible.map((p) => ({
       id: p.id,
       name: nameOf.get(p.id),

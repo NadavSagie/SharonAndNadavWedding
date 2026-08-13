@@ -14,6 +14,26 @@
     "p-0206": {
       "hidden": true,
       "note": "Flagged for deletion in a manual duplicate-identity review. Investigated: 3 faces across 2 photos, consistently the same person, but embedding distance to the 2-3 nearby clusters it was suspected of duplicating was too weak/ambiguous to identify which one (if any) it actually duplicates -- see face-index/review.json for the closest candidates. Hidden rather than merged into a guess."
+    },
+    "p-0176": {
+      "hidden": true,
+      "note": "Deleted per guest request 2026-08-13 (was Guest 100). A real, internally-consistent bystander (grey-streaked hair, cat-eye sunglasses, same across all 3 photos) -- hidden, not merged, since it doesn't match anyone else. Photos stay visible; only this identity's page is removed."
+    },
+    "p-0025": {
+      "hidden": true,
+      "note": "Deleted per guest request 2026-08-13 (was Guest 122)."
+    },
+    "p-0026": {
+      "hidden": true,
+      "note": "Deleted per guest request 2026-08-13 (was Guest 123). Co-occurs with p-0025 in both of its photos (two women, similar sunglasses, side by side) -- whether they're one person split in two or two similar-looking guests doesn't change the outcome since both are being hidden either way."
+    },
+    "p-0251": {
+      "hidden": true,
+      "note": "Deleted per guest request 2026-08-13 (was Guest 144). Impure 2-photo cluster -- its own two photos (t-522, t-596) show two clearly DIFFERENT people (a young woman and a bearded man), another instance of the small-impure-cluster pattern documented below. Doesn't matter for a deletion: hiding removes the (already-wrong) identity page either way and the correctly-identified people elsewhere in those photos are unaffected."
+    },
+    "p-0267": {
+      "hidden": true,
+      "note": "Deleted per guest request 2026-08-13 (was Guest 146). A real, internally-consistent bystander (glasses, same across both photos) -- hidden, not merged, since it doesn't match anyone else."
     }
   },
   "merge": [
@@ -121,7 +141,8 @@
     ],
     [
       "p-0023",
-      "p-0057"
+      "p-0057",
+      "p-0173"
     ],
     [
       "p-0046",
@@ -142,12 +163,82 @@
     [
       "p-0065",
       "p-0174"
+    ],
+    [
+      "p-0016",
+      "p-0238"
+    ],
+    [
+      "p-0052",
+      "p-0233"
+    ],
+    [
+      "p-0050",
+      "p-0237"
+    ],
+    [
+      "p-0105",
+      "p-0158"
+    ],
+    [
+      "p-0121",
+      "p-0196"
+    ],
+    [
+      "p-0179",
+      "p-0205"
+    ],
+    [
+      "p-0211",
+      "p-0257",
+      "p-0297"
+    ],
+    [
+      "p-0081",
+      "p-0282"
+    ],
+    [
+      "p-0175",
+      "p-0230"
     ]
   ],
   "split": {
     "p-0089": {
-      "moveFaces": ["t-356_3032x0584","t-357_3048x0560","t-358_3072x0592","t-505_0968x0416","t-507_0768x0744","t-508_0776x0616","t-509_0544x0536","t-573_1768x1632","t-581_0312x0656","t-594_2120x0576","t-607_3464x0896","t-618_2456x1576","t-619_2464x1552","t-622_2536x1376","t-623_2344x1352","t-643_2688x0960","t-654_0256x0600","t-713_1376x0656","t-714_1360x0728","t-845_1440x0640"],
+      "moveFaces": [
+        "t-356_3032x0584",
+        "t-357_3048x0560",
+        "t-358_3072x0592",
+        "t-505_0968x0416",
+        "t-507_0768x0744",
+        "t-508_0776x0616",
+        "t-509_0544x0536",
+        "t-573_1768x1632",
+        "t-581_0312x0656",
+        "t-594_2120x0576",
+        "t-607_3464x0896",
+        "t-618_2456x1576",
+        "t-619_2464x1552",
+        "t-622_2536x1376",
+        "t-623_2344x1352",
+        "t-643_2688x0960",
+        "t-654_0256x0600",
+        "t-713_1376x0656",
+        "t-714_1360x0728",
+        "t-845_1440x0640"
+      ],
       "to": "p-0313"
+    },
+    "p-0229": {
+      "moveFaces": [
+        "t-406_1480x0664"
+      ],
+      "to": "p-0001"
+    },
+    "p-0279": {
+      "moveFaces": [
+        "t-624_0880x1016"
+      ],
+      "to": "p-0002"
     }
   },
   "ignoreFaces": [],
@@ -424,6 +515,86 @@
     [
       "p-0055",
       "p-0001"
+    ],
+    [
+      "p-0188",
+      "p-0081"
+    ],
+    [
+      "p-0313",
+      "p-0051"
+    ],
+    [
+      "p-0313",
+      "p-0002"
+    ],
+    [
+      "p-0313",
+      "p-0082"
+    ],
+    [
+      "p-0023",
+      "p-0105"
+    ],
+    [
+      "p-0313",
+      "p-0105"
+    ],
+    [
+      "p-0144",
+      "p-0313"
+    ],
+    [
+      "p-0313",
+      "p-0134"
+    ],
+    [
+      "p-0024",
+      "p-0313"
+    ],
+    [
+      "p-0148",
+      "p-0220"
+    ],
+    [
+      "p-0177",
+      "p-0200"
+    ],
+    [
+      "p-0065",
+      "p-0279"
+    ],
+    [
+      "p-0212",
+      "p-0143"
+    ],
+    [
+      "p-0181",
+      "p-0270"
+    ],
+    [
+      "p-0140",
+      "p-0060"
+    ],
+    [
+      "p-0291",
+      "p-0180"
+    ],
+    [
+      "p-0280",
+      "p-0212"
+    ],
+    [
+      "p-0202",
+      "p-0023"
+    ],
+    [
+      "p-0293",
+      "p-0105"
+    ],
+    [
+      "p-0290",
+      "p-0202"
     ]
   ],
   "_readme": [
@@ -525,11 +696,98 @@
     "which raw cluster tier-1/tier-2 fuse those faces into first, so it keeps",
     "re-separating p-0089 from p-0313 on every future re-cluster with no risk",
     "of collateral fragmentation. Verified stable across two consecutive",
-    "--from=cluster runs with no doNotMerge entry for this pair."
+    "--from=cluster runs with no doNotMerge entry for this pair.",
+    "",
+    "2026-08-13: second guest-reported batch (11 claimed duplicate pairs + 5",
+    "delete requests). Root cause, diagnosed by pulling raw descriptors for",
+    "every reported pair: their centroid distances were 0.44-0.63, i.e. mostly",
+    "OUTSIDE the then-existing review band (0.36-0.44) -- review.json never",
+    "surfaced any of them, because a 2-3-photo cluster's centroid is a much",
+    "noisier estimate of a person's true embedding than a well-populated one,",
+    "so the SAME absolute threshold that works for Nadav/Sharon-sized",
+    "fragments is miscalibrated for tiny ones. Algorithm fix (see config.mjs",
+    "and identity-consolidation.mjs for the calibration and code): the review",
+    "band now widens for small clusters, but ONLY the REVIEW listing, never",
+    "the auto-merge thresholds -- ruled out an exhaustive small-cluster listing",
+    "(measured 1868 rows, unreviewable) in favour of each small cluster",
+    "reporting only its single nearest small-cluster neighbour. Separately",
+    "added an impure-cluster purity check: a handful of the reports turned out",
+    "to be a SPLIT problem, not a merge problem -- p-0229 and p-0279 were each",
+    "a single tier-1 cluster secretly containing TWO different people (one",
+    "frame the reported target, one frame an unrelated bystander who happened",
+    "to land close in embedding space), which the purity check now flags",
+    "generally as clusters whose own two farthest-apart members are further",
+    "apart than any verified real small cluster on this dataset ever was.",
+    "",
+    "Per-pair outcome, each independently checked against the actual photos",
+    "(never merged on the report or the distance alone):",
+    "- Nadav (p-0001) <- Guest 135 (p-0229): PARTIAL. p-0229 was impure --",
+    "  t-406 (the bride/groom portrait) really is Nadav; t-766 is an unrelated",
+    "  bearded man ALSO already correctly tagged as a separate p-0001 face in",
+    "  that same frame (a direct contradiction, not a judgement call). Fixed",
+    "  via split, moving only t-406 into Nadav; t-766 stays under p-0229 (now",
+    "  1 photo). This also resolves the apparent conflict with the existing",
+    "  doNotMerge[p-0001,p-0229] from the manual review tool: that decision was",
+    "  correct for t-766 (still vetoed, correctly) and simply predates the",
+    "  discovery that the SAME 2-photo cluster also contained a genuine Nadav",
+    "  photo. The veto is left in place -- it protects the right thing now.",
+    "- Nadav (p-0001) <- Guest 108 (p-0186): REJECTED. All 3 of p-0186's photos",
+    "  show Nadav ALREADY separately tagged in the same frame at a different",
+    "  box -- p-0186 is a different, consistent bystander in every one of his",
+    "  own appearances. Not merged.",
+    "- Sharon (p-0002) <- Guest 150 (p-0279): PARTIAL, same shape as p-0229.",
+    "  t-624 (a candid of the bride clapping in her wedding dress) is Sharon;",
+    "  t-616 is a different person (contradiction: Sharon already separately",
+    "  tagged in that frame). Fixed via split, moving only t-624 into Sharon;",
+    "  t-616 stays under p-0279 (now 1 photo, still shows up as a",
+    "  small-cluster nearest-neighbour candidate against Nadav in review.json --",
+    "  correctly rejectable by the existing doNotMerge[p-0001,p-0279]).",
+    "- Guest 2 (p-0023) <- Guest 98 (p-0173): CONFIRMED, merged. Same glasses,",
+    "  same red lipstick, same styling in all 3 of p-0173's photos.",
+    "- Guest 9 (p-0016) <- Guest 141 (p-0238): merged.",
+    "- Guest 25 (p-0052) <- Guest 139 (p-0233): merged.",
+    "- Guest 16 (p-0050) <- Guest 140 (p-0237): merged.",
+    "- Guest 46 (p-0105) <- Guest 92 (p-0158): merged.",
+    "- Guest 75 (p-0121) <- Guest 114 (p-0196): merged.",
+    "- Guest 103 (p-0179) <- Guest 118 (p-0205): CONFIRMED, merged -- same",
+    "  woman, sunglasses on in one cluster's photos and off in the other's.",
+    "- Guest 103 (p-0179) <- Guest 104 (p-0180): REJECTED. p-0179 is an adult",
+    "  woman; p-0180 is a young girl (her daughter, from the same family photo)",
+    "  -- an adult and a child, clearly not the same person. Confirmed both",
+    "  visually and by contradiction (2 of p-0180's 3 photos already have",
+    "  p-0179 separately tagged in the same frame at a different box). Not",
+    "  merged -- this was the one report on this list that was simply wrong.",
+    "- Guest 120 (p-0211) <- Guest 145 (p-0257) and Guest 159 (p-0297): both",
+    "  confirmed (same young woman on the dance floor, matching hair/earrings",
+    "  across all three) and merged into one group.",
+    "- Guest 42 (p-0081) <- Guest 152 (p-0282): merged.",
+    "",
+    "Delete requests, all applied as hidden (never merged into a guess):",
+    "p-0176 (Guest 100), p-0025 (Guest 122), p-0026 (Guest 123), p-0251",
+    "(Guest 144, itself another impure 2-photo cluster -- a young woman and a",
+    "bearded man -- irrelevant to a deletion since hiding removes the identity",
+    "page either way), p-0267 (Guest 146).",
+    "",
+    "Validation: 875/875 photos and every OTHER person's photos byte-identical",
+    "before/after; the only faces that disappeared from photo-faces.json are",
+    "the 11 faces belonging to the 5 newly-hidden people (by design -- hidden",
+    "people's attribution is stripped, per the privacy contract in emit.mjs);",
+    "verified stable across 3 consecutive --from=cluster runs.",
+    "",
+    "The improved algorithm's widened review net independently re-discovered",
+    "the p-0229 and p-0279 impurity on its own (both show up as small-cluster",
+    "nearest-neighbour candidates against Nadav/Sharon in review.json) without",
+    "being told about this specific batch -- direct evidence the general fix,",
+    "not a per-id special case, is what's catching these now. It also surfaced",
+    "~15 other candidate pairs with no corroborating report; spot-checked by",
+    "eye, some look plausible (matching beards/glasses on similarly-styled",
+    "older men) and some are clearly wrong (different women, two different",
+    "children) -- left unmerged in review.json for a human to judge, exactly",
+    "as designed."
   ],
   "_reviewToolNote": [
-    "Last applied from the manual review UI at 2026-08-13T12:29:29.763Z:",
-    "28 pair(s) marked same-person, 68 marked different-people.",
-    "Backup of the pre-apply state: face-index/backups/2026-08-13T12-29-29-723Z/"
+    "Last applied from the manual review UI at 2026-08-13T14:13:15.252Z:",
+    "29 pair(s) marked same-person, 88 marked different-people.",
+    "Backup of the pre-apply state: face-index/backups/2026-08-13T14-13-15-218Z/"
   ]
 }

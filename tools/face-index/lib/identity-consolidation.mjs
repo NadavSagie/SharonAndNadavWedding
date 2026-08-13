@@ -36,6 +36,19 @@
  * manual review tool, `overrides.json`) is a hard veto that blocks a specific
  * pair of identities from ever being united here, however strong the
  * evidence looks — see `violatesDoNotMerge` below.
+ *
+ * Two extra checks feed review.json but never auto-merge or auto-split
+ * anything on their own — both diagnosed from a real guest-reported batch of
+ * same-person-split-across-ids reports (2026-08-13) that the above missed
+ * entirely: see config.mjs for the calibration story on each.
+ *   - The review band above widens when the SMALLER side of a pair is a
+ *     small (2-6 photo) cluster, whose centroid is too noisy an estimate for
+ *     the normal band to reliably surface a real match.
+ *   - `impureClusters`: small clusters (<=4 faces) whose own members are
+ *     unexpectedly far apart from EACH OTHER may secretly contain two
+ *     different people that tier 1 average-linked together (e.g. because
+ *     they're always framed side by side) — flagged for a human to split via
+ *     overrides.json, never auto-split.
  */
 
 function dist(a, b, dim) {
@@ -243,14 +256,42 @@ export function consolidateIdentities(faces, clusters, cfg, dupeGroups, doNotMer
   // path) is exactly a "no-corroborating-evidence" pair; anything else in the
   // band was never even evaluated (its centroid never got close enough to be
   // the best candidate in any iteration) and is a plain "gray-zone" report.
+  //
+  // The band widens when the SMALLER side is a small cluster — see config.mjs
+  // for why: a 2-3-photo centroid is too noisy an estimate for the normal
+  // band to reliably surface a real match, so review.json was silently never
+  // showing them at all. Widening only ever adds review candidates, never
+  // changes what gets auto-merged above.
+  //
+  // BUT listing every pair under a wider radius is O(small clusters^2) — with
+  // ~60 small clusters in a wedding-sized dataset that is thousands of rows,
+  // nobody will ever actually read that list, which defeats the point.
+  // Instead, each small cluster contributes at most its ONE nearest small-
+  // cluster neighbour: still catches the real match (its nearest neighbour,
+  // almost by definition, IS the closest candidate worth a human's look) at
+  // O(small clusters), not O(small clusters^2).
+  function isSmall(groups) { return groups <= cfg.IDENTITY_CONSOLIDATION_REVIEW_WIDEN_SMALL_GROUPS; }
+
   const alive = nodes.map((n, i) => (n ? i : -1)).filter((i) => i >= 0);
   const finalCentroids = allCentroids();
+  const groupCounts = alive.map((i) => distinctGroupCount(nodes[i].photos, groupOf));
   const identityReviewPairs = [];
+  const nearestSmallNeighbour = new Map(); // alive-index -> {other, d}
   for (let x = 0; x < alive.length; x++) {
     const i = alive[x];
     for (let y = x + 1; y < alive.length; y++) {
       const j = alive[y];
       const d = dist(finalCentroids[i], finalCentroids[j], dim);
+      const bothSmall = isSmall(groupCounts[x]) && isSmall(groupCounts[y]);
+      if (bothSmall) {
+        if (d <= cfg.IDENTITY_CONSOLIDATION_REVIEW_MAX_SMALL) {
+          for (const [a, b] of [[x, y], [y, x]]) {
+            const cur = nearestSmallNeighbour.get(a);
+            if (!cur || d < cur.d) nearestSmallNeighbour.set(a, { other: b, d });
+          }
+        }
+        continue; // small-small pairs are handled entirely via nearest-neighbour below
+      }
       if (d > cfg.IDENTITY_CONSOLIDATION_REVIEW_MAX) continue;
       identityReviewPairs.push({
         d: Number(d.toFixed(4)),
@@ -260,8 +301,47 @@ export function consolidateIdentities(faces, clusters, cfg, dupeGroups, doNotMer
       });
     }
   }
+  const seenSmallPairs = new Set();
+  for (const [x, { other: y, d }] of nearestSmallNeighbour) {
+    const key = x < y ? `${x}|${y}` : `${y}|${x}`;
+    if (seenSmallPairs.has(key)) continue;
+    seenSmallPairs.add(key);
+    identityReviewPairs.push({
+      d: Number(d.toFixed(4)),
+      faceA: faces[nodes[alive[x]].members[0]].id,
+      faceB: faces[nodes[alive[y]].members[0]].id,
+      reason: 'small-cluster-nearest-neighbour',
+    });
+  }
   identityReviewPairs.sort((p, q) => p.d - q.d);
 
+  // Purity check: does this small cluster's own membership look like it might
+  // secretly contain two different people? See config.mjs for calibration —
+  // scoped to small clusters on purpose, this signal is unreliable at scale.
+  const impureClusters = [];
+  for (const i of alive) {
+    const members = nodes[i].members;
+    if (members.length < 2 || members.length > cfg.IMPURE_CLUSTER_MAX_MEMBERS) continue;
+    let maxD = 0;
+    let worstA = -1;
+    let worstB = -1;
+    for (let a = 0; a < members.length; a++) {
+      for (let b = a + 1; b < members.length; b++) {
+        const d = dist(faces[members[a]].descriptor, faces[members[b]].descriptor, dim);
+        if (d > maxD) { maxD = d; worstA = members[a]; worstB = members[b]; }
+      }
+    }
+    if (maxD > cfg.IMPURE_CLUSTER_MAX_INTERNAL_DIST) {
+      impureClusters.push({
+        faceA: faces[worstA].id,
+        faceB: faces[worstB].id,
+        d: Number(maxD.toFixed(4)),
+        clusterSize: members.length,
+      });
+    }
+  }
+  impureClusters.sort((p, q) => q.d - p.d);
+
   const outClusters = alive.map((i) => ({ members: nodes[i].members, photos: nodes[i].photos }));
-  return { clusters: outClusters, mergeCount, identityReviewPairs };
+  return { clusters: outClusters, mergeCount, identityReviewPairs, impureClusters };
 }

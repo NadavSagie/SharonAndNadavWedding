@@ -117,6 +117,54 @@ export const CONFIG = {
   /** Centroid distances above the threshold but at or below this are surfaced in
    *  review.json as "possible same identity" rather than auto-merged or ignored. */
   IDENTITY_CONSOLIDATION_REVIEW_MAX: 0.44,
+  /**
+   * IDENTITY_CONSOLIDATION_REVIEW_MAX is calibrated for well-populated
+   * clusters, where a centroid averages over enough faces that its distance
+   * to another person's centroid is a stable signal. A 2-3-photo cluster's
+   * centroid is a much noisier estimate of "this person's true embedding" —
+   * diagnosed on a real guest-reported batch (2026-08-13): every confirmed
+   * same-person pair where the SMALLER side had only 2-3 distinct photos had
+   * a centroid distance of 0.44-0.56, i.e. entirely outside the normal review
+   * band, so review.json never surfaced them and a human had to notice by eye.
+   * Widening the band ONLY when the smaller side is this small — never the
+   * auto-merge thresholds above, only what gets a REVIEW ROW — recovers this
+   * without any risk of a new false-positive auto-merge: a wider net here can
+   * only ever produce more candidates for a human to accept or reject, same
+   * as the existing band already does (review.json's history includes
+   * rejected candidates like p-0188/p-0282 alongside confirmed ones).
+   *
+   * The naive version of this — list every pair under the wider radius — was
+   * tried and reverted: with ~60 small clusters in a wedding-sized dataset,
+   * an exhaustive pairing produces THOUSANDS of rows (measured: 1868), which
+   * nobody will ever actually read. Instead, when BOTH sides of a pair are
+   * this small, only each cluster's SINGLE nearest small-cluster neighbour is
+   * reported (see identity-consolidation.mjs) — O(small clusters), not
+   * O(small clusters^2), while still surfacing the one candidate most likely
+   * to be a real match. Pairs where at least one side is NOT small keep the
+   * original exhaustive listing against REVIEW_MAX — that side's population
+   * is never large enough to explode combinatorially.
+   */
+  IDENTITY_CONSOLIDATION_REVIEW_WIDEN_SMALL_GROUPS: 3,
+  IDENTITY_CONSOLIDATION_REVIEW_MAX_SMALL: 0.58,
+  /**
+   * Small-cluster purity check: with only a handful of faces, a genuinely
+   * pure cluster's own members stay close together (diagnosed range 0.10-0.36
+   * on this dataset's verified 2-3-face clusters). A max-internal-pairwise
+   * distance above this, in a cluster this small, means tier 1 average-linked
+   * two DIFFERENT people together (diagnosed range 0.41-0.46 on 3 confirmed
+   * impure 2-photo clusters found in the same batch) — most likely because
+   * they happen to co-occur (always framed together) or share some coarse
+   * visual trait (similar sunglasses, similar hair) that the descriptor
+   * weights heavily under degraded conditions. NOT reliable on larger
+   * clusters: legitimate pose/lighting diversity alone pushes a real person's
+   * own internal max well past this (a verified real 31-photo cluster on this
+   * dataset reached 0.62) — that's exactly the inflation tier 2 exists to
+   * counteract for MERGING, but there's no equivalent correction for judging
+   * a single cluster's own internal spread, so this check stays scoped to
+   * clusters too small for that diversity explanation to apply.
+   */
+  IMPURE_CLUSTER_MAX_MEMBERS: 4,
+  IMPURE_CLUSTER_MAX_INTERNAL_DIST: 0.40,
   /** Corroboration guard: even a centroid pair under threshold is only merged if
    *  at least one genuine RAW face-to-face pair between the two clusters also
    *  clears this bar. Reuses FACE_SIMILARITY_THRESHOLD as an upper sanity bound —

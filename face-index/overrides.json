@@ -144,7 +144,12 @@
       "p-0174"
     ]
   ],
-  "split": {},
+  "split": {
+    "p-0089": {
+      "moveFaces": ["t-356_3032x0584","t-357_3048x0560","t-358_3072x0592","t-505_0968x0416","t-507_0768x0744","t-508_0776x0616","t-509_0544x0536","t-573_1768x1632","t-581_0312x0656","t-594_2120x0576","t-607_3464x0896","t-618_2456x1576","t-619_2464x1552","t-622_2536x1376","t-623_2344x1352","t-643_2688x0960","t-654_0256x0600","t-713_1376x0656","t-714_1360x0728","t-845_1440x0640"],
+      "to": "p-0313"
+    }
+  },
   "ignoreFaces": [],
   "ignorePhotos": [],
   "doNotMerge": [
@@ -491,7 +496,36 @@
     "Sharon) before any merge, not a blanket merge that would misattribute the",
     "other woman's photos to Sharon. p-0188 vs p-0282 (also close, 0.37) was",
     "checked and is a clear false lead -- bald man vs a different man with a",
-    "full head of hair -- correctly left unmerged."
+    "full head of hair -- correctly left unmerged.",
+    "",
+    "2026-08-13: Guest 6 (p-0089, 40 photos) was reported as two different women",
+    "wrongly merged into one identity. Verified visually: t-462 (dark hair,",
+    "dimpled smile, 'GG' necklace) and t-356 (lighter brown hair, freckles,",
+    "narrower chin) are clearly different people. Split via embeddings: seeded",
+    "2-means on all 40 face descriptors from the two reference faces, iterated",
+    "to convergence (final centroid distance 0.31), producing an exact 20/20",
+    "split. Cross-checked every face crop by eye against the two reference",
+    "photos -- no disagreements found, including the disco-lit/motion-blurred",
+    "shots where the embedding is the more reliable signal than the human eye.",
+    "Searched all other current people for anyone closer to either centroid than",
+    "0.36 (the auto-merge bar) -- none found; the next-closest matches were all",
+    "stale/retired ledger ids no longer active in the current output. p-0089",
+    "kept the 20 photos nearest the t-462 face (t-461/462/463, t-551/552/553,",
+    "t-570, t-606, t-671/672/674, t-736/737, t-742/743/744/745, t-760/761/762).",
+    "The other 20 (t-356/357/358, t-505/507/508/509, t-573, t-581, t-594, t-607,",
+    "t-618/619, t-622/623, t-643, t-654, t-713/714, t-845) moved via split to a",
+    "freshly-allocated id, p-0313. Deliberately did NOT also add",
+    "doNotMerge[p-0089, p-0313]: tried it, and it backfired -- tier-2",
+    "consolidation refuses ANY merge touching either side's forbidden anchors,",
+    "which blocked several of Woman B's OWN fragments (t-594/607/618/619/845",
+    "and others) from consolidating into p-0313 at all, scattering them into a",
+    "stray extra identity and, worse, into unsorted (silently dropping their",
+    "person attribution). The split override alone is the correct durable fix",
+    "here: it matches by exact, content-derived face id every run regardless of",
+    "which raw cluster tier-1/tier-2 fuse those faces into first, so it keeps",
+    "re-separating p-0089 from p-0313 on every future re-cluster with no risk",
+    "of collateral fragmentation. Verified stable across two consecutive",
+    "--from=cluster runs with no doNotMerge entry for this pair."
   ],
   "_reviewToolNote": [
     "Last applied from the manual review UI at 2026-08-13T12:29:29.763Z:",

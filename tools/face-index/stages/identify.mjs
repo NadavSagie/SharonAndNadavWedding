@@ -3,8 +3,8 @@
  *
  *   filter -> cluster -> stable IDs from the ledger -> apply overrides -> rank
  *
- * Overrides are applied in a fixed order (ignore, split, merge, attributes) so
- * the result is deterministic no matter how the file is written.
+ * Overrides are applied in a fixed order (ignore, split, merge, include,
+ * attributes) so the result is deterministic no matter how the file is written.
  */
 
 import * as log from '../lib/log.mjs';
@@ -200,6 +200,43 @@ export function identify(cfg, photos, analysis, ledger, overrides) {
     target.photoIds = [...new Set(target.scored.map((s) => s.photoId))];
     target.distinctGroups = distinctGroups(target.photoIds, dupeGroups);
     ledger.refresh(canonical, target.faceIds);
+  }
+
+  // include: attach individually human-confirmed faces that clustering never
+  // surfaced as this person at all -- discarded as a too-thin/low-quality
+  // cluster (too few distinct moments to pass MIN_CLUSTER_PHOTOS) or rejected
+  // outright at the confidence/size/frontality gate above. Unlike split/merge,
+  // the source isn't an existing person entry, so this reads straight from
+  // the per-photo analysis, bypassing every automatic gate -- appropriate
+  // because a human has already looked at the crop and confirmed the identity.
+  for (const [pid, faceIdList] of Object.entries(overrides.include ?? {})) {
+    const target = byId.get(pid) ?? { id: pid, scored: [], faceIds: [], photoIds: [], distinctGroups: 0 };
+    const already = new Set(target.faceIds);
+    for (const faceId of faceIdList) {
+      if (already.has(faceId)) continue;
+      const photoId = faceId.replace(/_\d+x\d+$/, '');
+      const raw = analysis.get(photoId)?.faces.find((f) => f.id === faceId);
+      if (!raw) { stale.push(`include ${pid}: face ${faceId} not found`); continue; }
+      let centrality = 0.6;
+      if (target.scored.length) {
+        const memberDescriptors = target.scored
+          .map((s) => analysis.get(s.photoId)?.faces.find((f) => f.id === s.faceId)?.descriptor)
+          .filter(Boolean);
+        if (memberDescriptors.length) {
+          const dim = raw.descriptor.length;
+          const cen = new Float64Array(dim);
+          for (const d of memberDescriptors) for (let k = 0; k < dim; k++) cen[k] += d[k] / memberDescriptors.length;
+          const dc = distanceToCentroid(raw.descriptor, cen);
+          centrality = Math.max(0, 1 - Math.min(1, dc / cfg.FACE_SIMILARITY_THRESHOLD));
+        }
+      }
+      target.scored.push({ idx: -1, faceId, photoId, q: faceQuality(raw, centrality, cfg) });
+    }
+    target.faceIds = target.scored.map((s) => s.faceId);
+    target.photoIds = [...new Set(target.scored.map((s) => s.photoId))];
+    target.distinctGroups = distinctGroups(target.photoIds, dupeGroups);
+    ledger.refresh(pid, target.faceIds);
+    if (!byId.has(pid)) { byId.set(pid, target); people.push(target); }
   }
 
   // attributes + hidden

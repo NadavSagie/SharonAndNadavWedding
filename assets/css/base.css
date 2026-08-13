@@ -90,7 +90,6 @@ button, a, summary, input {
 .page {
   max-width: var(--content-max);
   margin: 0 auto;
-  padding-bottom: var(--sp-9);
 }
 
 .page-intro {

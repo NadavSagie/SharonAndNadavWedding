@@ -68,28 +68,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Search ------------------------------------------------------------------- */
-
-.people-search {
-  display: flex; align-items: center; gap: var(--sp-3);
-  max-width: 420px; margin: 0 auto var(--sp-6);
-  padding: 0 var(--sp-4);
-  height: var(--tap-min);
-  background: var(--c-paper-raised);
-  border-radius: var(--r-pill);
-}
-.people-search svg {
-  width: 17px; height: 17px; flex: none;
-  fill: none; stroke: var(--c-muted); stroke-width: 1.8;
-  stroke-linecap: round;
-}
-.people-search input {
-  flex: 1; min-width: 0; height: 100%;
-  border: 0; background: none; outline: none;
-  font: inherit; font-size: var(--fs-base); color: var(--c-ink);
-}
-.people-search input::placeholder { color: var(--c-muted); }
-
 /* Long tail ---------------------------------------------------------------- */
 
 .people-tail {

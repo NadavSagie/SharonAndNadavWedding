@@ -1,6 +1,6 @@
 /** The People page — the heart of the app. */
 
-import { h, icon, announce } from '../util/dom.js';
+import { h } from '../util/dom.js';
 import { getPhotos, getPeople, displayName, sortPeople } from '../data.js';
 import { coverSrc } from '../util/img.js';
 import { setHeader } from '../components/appHeader.js';
@@ -59,39 +59,11 @@ export async function peopleView() {
 
   const grid = h('div', { class: 'people-grid' }, main.map(personTile));
 
-  const heading = h('h1', { tabindex: '-1' }, 'Who are you?');
+  // Visually hidden — not a visible page section, just the per-route focus
+  // target every view uses so screen readers announce the new page on nav.
+  const heading = h('h1', { class: 'sr-only', tabindex: '-1' }, 'Find your photos');
 
-  const parts = [
-    h('div', { class: 'page-intro' },
-      heading,
-      h('p', { class: 'sub' }, 'Tap your face to see every photo you’re in.'),
-      h('p', { class: 'meta' },
-        `${sorted.length} ${sorted.length === 1 ? 'person' : 'people'} · ${photos.length} photos`)),
-  ];
-
-  // A search box that can never match anything is worse than no search box.
-  const anyNamed = sorted.some((p) => p.name);
-  if (anyNamed) {
-    const input = h('input', {
-      type: 'search', placeholder: 'Search by name', 'aria-label': 'Search people by name',
-      autocomplete: 'off', inputmode: 'search', enterkeyhint: 'search',
-    });
-    input.addEventListener('input', () => {
-      const q = input.value.trim().toLowerCase();
-      let shown = 0;
-      grid.replaceChildren(...main.filter((p) => {
-        const hit = !q
-          || (p.name?.toLowerCase().includes(q))
-          || `guest ${p.guestNumber}`.includes(q);
-        if (hit) shown++;
-        return hit;
-      }).map(personTile));
-      announce(q ? `${shown} people match` : `${main.length} people`);
-    });
-    parts.push(h('div', { class: 'people-search' },
-      icon(['M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z', 'M20 20l-4.2-4.2']),
-      input));
-  }
+  const parts = [heading];
 
   if (featured.length) {
     parts.push(h('p', { class: 'couple-label' }, 'The couple'));
